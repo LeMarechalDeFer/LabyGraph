@@ -1,3 +1,5 @@
+// gcc -o maze maze.c -lraylib -lm -lpthread -ldl -lrt -lX11
+
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
