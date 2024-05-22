@@ -1,31 +1,28 @@
 #include "../include/graph.h"
 //gcc -I/usr/local/include -L/usr/local/lib -lraylib -lm -lpthread -ldl -lrt -lX11 src/main.c -o tmp
 
-int main(void)
-{
-    // Initialisation
-    const int screenWidth = 800;
-    const int screenHeight = 450;
 
-    InitWindow(screenWidth, screenHeight, "Test Raylib");
 
-    SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
+int main(void) {
+    Maze maze;
+    InitializeMaze(&maze, 10, 10); // Par exemple, un labyrinthe de 10x10
+    GenerateMazeRecursiveBacktracker(&maze);
 
-    // Boucle de jeu principale
-    while (!WindowShouldClose())    // Detect window close button or ESC key
-    {
-        // Commencez le dessin
+    // Initialisation de Raylib
+    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Test Raylib - Niveau 1");
+    SetTargetFPS(60);
+
+    while (!WindowShouldClose()) {
         BeginDrawing();
-
         ClearBackground(RAYWHITE);
 
-        DrawText("Congrats! Raylib is working!", 190, 200, 20, LIGHTGRAY);
+        // Rendre le labyrinthe
+        RenderMaze(&maze);
 
         EndDrawing();
     }
 
-    // Déinitialisation
-    CloseWindow();                  // Close window and OpenGL context
-
+    CloseWindow();
+    FreeMaze(&maze); // Libérer la mémoire allouée pour le labyrinthe
     return 0;
 }
