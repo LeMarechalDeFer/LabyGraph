@@ -15,6 +15,17 @@
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
 
+
+
+//definition des level 
+
+typedef enum GameScreen 
+    { 
+        LOGO = 0, TITLE,LEVEL1, GAMEPLAY, EXPLANATION ,ENDING
+    }GameScreen;
+    
+
+
 // Structure pour représenter un sommet (noeud) dans le graphe
 typedef struct Node {
     int id;         // Identifiant unique du noeud

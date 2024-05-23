@@ -1,31 +1,84 @@
 #include "../include/graph.h"
-//gcc -I/usr/local/include -L/usr/local/lib -lraylib -lm -lpthread -ldl -lrt -lX11 src/main.c -o tmp
+#include "raylib.h"
+//#include "gamestate.h"
+//cc game.c -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
+  
+int main() {
+    // Initialisation de Raylib
+    const int screenWidth = 1200;
+    const int screenHeight = 800;
 
-int main(void)
-{
-    // Initialisation
-    const int screenWidth = 800;
-    const int screenHeight = 450;
+    InitWindow(screenWidth, screenHeight, "Menu du jeu éducatif");
+        SetTraceLogLevel(LOG_ALL); // Activer les logs détaillés
 
-    InitWindow(screenWidth, screenHeight, "Test Raylib");
 
-    SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
+    // Charger l'image du personnage
+    Image player = LoadImage("src/player.png");
+    Texture2D player_texture = LoadTextureFromImage(player);
+    UnloadImage(player);
+   
+    
 
-    // Boucle de jeu principale
-    while (!WindowShouldClose())    // Detect window close button or ESC key
-    {
-        // Commencez le dessin
+    // Définir les états de jeu
+    //typedef enum GameScreen { LOGO = 0, TITLE,LEVEL1, GAMEPLAY, EXPLANATION ,ENDING } GameScreen;
+    GameScreen currentScreen = TITLE;
+    double lastKeyPressTime = 0;  // Temps de la dernière pression de touche
+
+    // Boucle principale du jeu
+    while (!WindowShouldClose()) {    // Détecter la fermeture de la fenêtre
+        double currentTime = GetTime();
+        // Mise à jour des entrées
+        if (currentScreen == TITLE && IsKeyPressed(KEY_ENTER) && currentTime - lastKeyPressTime > 0.5) 
+        {
+            currentScreen = GAMEPLAY; // Commence le jeu    
+            lastKeyPressTime = currentTime;  // Mettre à jour le temps de la dernière action
+        }
+
+        if (currentScreen == GAMEPLAY && IsKeyPressed(KEY_ENTER)&& currentTime - lastKeyPressTime > 0.5)
+        {
+            currentScreen = EXPLANATION;
+            lastKeyPressTime = currentTime;
+        }
+        
+       /* if ((currentScreen = TITLE) && IsKeyPressed(KEY_RIGHT))
+        {
+            currentScreen = LEVEL1;
+        }*/
+        // Commence à dessiner
         BeginDrawing();
 
         ClearBackground(RAYWHITE);
 
-        DrawText("Congrats! Raylib is working!", 190, 200, 20, LIGHTGRAY);
+        switch (currentScreen) {
+            case TITLE: 
+                DrawText("Appuyez sur 'ENTRER' pour commencer", 190, 200, 20, LIGHTGRAY);
+                DrawTexture(player_texture, screenWidth/2, screenHeight/2, WHITE);
+            break;
+            case GAMEPLAY:
+                // Ici, vous devriez mettre le code pour afficher le premier niveau du jeu
+                DrawText("Niveau 1 ~ BELLMAN", 190, 200, 20, LIGHTGRAY);
+                break;
+                // Ajoutez la logique du jeu ici
+            case EXPLANATION:
+              // Display une deuxième fenêtre
+                DrawText("Fonction Bellman-Ford(G = (S, A), poids, s) \n pour u dans S faire \n |d[u] = +infini \n |pred[u] = null \n d[s] = 0 -> Boucle principale \n pour k = 1 à taille(S) - 1 faire \n|pour chaque arc (u, v) du graphe faire \n|      |    si d[u] + poids(u, v) < d[v] alors \n|      |    |    d[v] := d[u] + poids(u, v) \n|      |    |    pred[v]:= u \n retourner d, pred", 190, 300, 20, DARKGRAY);
+                break;
+           /* case LEVEL1:
+                DrawText("Appuyez sur 'ENTRER' pour commencer", 190, 200, 20, LIGHTGRAY);
+                break;*/
+            case ENDING:
+                DrawText("Fin du jeu", 350, 200, 20, LIGHTGRAY);
+                break;
+            default:
+                break;
+        }
 
         EndDrawing();
     }
 
-    // Déinitialisation
-    CloseWindow();                  // Close window and OpenGL context
+    // De-initialisation
+    UnloadTexture(player_texture); // Ne pas oublier de décharger la texture pour libérer la ressource
+    CloseWindow();        // Ferme la fenêtre et termine le programme
 
     return 0;
 }
