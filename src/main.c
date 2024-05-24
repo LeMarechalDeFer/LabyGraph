@@ -14,9 +14,23 @@ int main() {
 
     // Charger l'image du personnage
     Image player = LoadImage("src/player.png");
+    Image ESIEA_logo = LoadImage("src/ESIEA-logo.png");
+    
     Texture2D player_texture = LoadTextureFromImage(player);
+    Texture2D ESIEA_logo_texture = LoadTextureFromImage(ESIEA_logo);
+    
     UnloadImage(player);
-   
+    UnloadImage(ESIEA_logo);
+
+    //generation du labyrinthe §§§§§§§§§§§§§§§§§§§§§
+     // Initialiser le générateur de nombres aléatoires
+    srand(time(NULL));
+
+    // Créer et initialiser le labyrinthe
+    Maze maze;
+    InitializeMazeLevel1(&maze);  // Assurez-vous que cette fonction configure correctement le labyrinthe
+
+    SetTargetFPS(60); // Définir le FPS pour une animation fluide
     
 
     // Définir les états de jeu
@@ -51,12 +65,23 @@ int main() {
 
         switch (currentScreen) {
             case TITLE: 
-                DrawText("Appuyez sur 'ENTRER' pour commencer", 190, 200, 20, LIGHTGRAY);
-                DrawTexture(player_texture, screenWidth/2, screenHeight/2, WHITE);
+                DrawText("Appuyez sur 'ENTRER' pour commencer", 200, screenHeight/2 -100, 45, LIGHTGRAY);
+                DrawTexture(player_texture, screenWidth/2-50, screenHeight/2 , WHITE);
+                //DrawTexture(ESIEA_logo_texture, screenWidth - screenWidth/2, 300, WHITE);
+                Rectangle sourceRec = { 0, 0, (float)ESIEA_logo.width, (float)ESIEA_logo.height };
+                Rectangle destRec = { screenWidth - 200, 0, 200, 150 };
+                Vector2 origin = { 0, 0 };
+
+                DrawTexturePro(ESIEA_logo_texture, sourceRec, destRec, origin, 0, WHITE);
             break;
             case GAMEPLAY:
                 // Ici, vous devriez mettre le code pour afficher le premier niveau du jeu
                 DrawText("Niveau 1 ~ BELLMAN", 190, 200, 20, LIGHTGRAY);
+
+                 // Fonction pour dessiner le labyrinthe
+                RenderMaze(&maze);
+
+
                 break;
                 // Ajoutez la logique du jeu ici
             case EXPLANATION:
@@ -77,6 +102,9 @@ int main() {
     }
 
     // De-initialisation
+    UnloadTexture(ESIEA_logo_texture); // Ne pas oublier de décharger la texture pour libérer la ressource
+        FreeMaze(&maze);  // Assurez-vous que cette fonction libère toute mémoire allouée
+
     UnloadTexture(player_texture); // Ne pas oublier de décharger la texture pour libérer la ressource
     CloseWindow();        // Ferme la fenêtre et termine le programme
 
