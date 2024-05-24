@@ -15,24 +15,38 @@ int main() {
     // Charger l'image du personnage
     Image player = LoadImage("src/player.png");
     Image ESIEA_logo = LoadImage("src/ESIEA-logo.png");
+    Image dialogue_box = LoadImage("src/dialogue_box.png");
     
     Texture2D player_texture = LoadTextureFromImage(player);
     Texture2D ESIEA_logo_texture = LoadTextureFromImage(ESIEA_logo);
-    
+    Texture2D dialogue_box_texture = LoadTextureFromImage(dialogue_box);
+
     UnloadImage(player);
     UnloadImage(ESIEA_logo);
+    UnloadImage(dialogue_box);
+
 
     //generation du labyrinthe §§§§§§§§§§§§§§§§§§§§§
      // Initialiser le générateur de nombres aléatoires
     srand(time(NULL));
 
     // Créer et initialiser le labyrinthe
+    
+    // Création et initialisation du labyrinthe
     Maze maze;
-    InitializeMazeLevel1(&maze);  // Assurez-vous que cette fonction configure correctement le labyrinthe
+    InitializeMaze(&maze, 10, 10);  // 10x10 est un exemple, ajustez selon vos besoins
+    GenerateMazeRecursiveBacktracker(&maze);
 
     SetTargetFPS(60); // Définir le FPS pour une animation fluide
     
-
+    char *monologue[] = {
+        "Bienvenue dans notre jeu!",
+        "Appuyez sur 'P' pour continuer le monologue.",
+        "Chaque pression vous mènera à la prochaine partie de l'histoire.",
+        "C'est la fin de notre démonstration. Merci!"
+    };
+    int maxLines = sizeof(monologue) / sizeof(monologue[0]);
+    int currentLine = 0;
     // Définir les états de jeu
     //typedef enum GameScreen { LOGO = 0, TITLE,LEVEL1, GAMEPLAY, EXPLANATION ,ENDING } GameScreen;
     GameScreen currentScreen = TITLE;
@@ -76,11 +90,28 @@ int main() {
             break;
             case GAMEPLAY:
                 // Ici, vous devriez mettre le code pour afficher le premier niveau du jeu
-                DrawText("Niveau 1 ~ BELLMAN", 190, 200, 20, LIGHTGRAY);
+                DrawText("Niveau 1 ~ BELLMAN", screenWidth/2-200, 0, 60, LIGHTGRAY);
 
                  // Fonction pour dessiner le labyrinthe
                 RenderMaze(&maze);
 
+                //Monologue 
+                if (IsKeyPressed(KEY_P)) {
+                    if (currentLine < maxLines - 1) {
+                        currentLine++;
+                    }
+                }  
+                Rectangle sourceMonologue = { 0, 0, (float)dialogue_box_texture.width, (float)dialogue_box_texture.height };
+                Rectangle dimMonologue = { 100, 130, 1000, 300 };
+                Vector2 originMonologue = { 0, 0 };
+
+                DrawTexturePro(dialogue_box_texture, sourceMonologue, dimMonologue, originMonologue, 0, WHITE);
+                //DrawTexture(dialogue_box_texture, 100, 180 , WHITE);
+                DrawText("appuier sur P pour continuer", 300, 230, 10, RED);  //changer la couleur en black 
+                if (currentLine < maxLines) {
+                    DrawText(monologue[currentLine], 190, 200, 30, RED);
+
+                }
 
                 break;
                 // Ajoutez la logique du jeu ici
@@ -103,8 +134,7 @@ int main() {
 
     // De-initialisation
     UnloadTexture(ESIEA_logo_texture); // Ne pas oublier de décharger la texture pour libérer la ressource
-        FreeMaze(&maze);  // Assurez-vous que cette fonction libère toute mémoire allouée
-
+    
     UnloadTexture(player_texture); // Ne pas oublier de décharger la texture pour libérer la ressource
     CloseWindow();        // Ferme la fenêtre et termine le programme
 
