@@ -110,28 +110,25 @@ int main() {
                 Vector2 originMonologue = { 0, 0 };
 
                 Color transparentColor = Fade(WHITE, 1.0f);  // Ajuste le second paramètre pour contrôler la transparence 1.0 =100%
-
+                    DrawTexturePro(dialogue_box_texture, sourceMonologue, dimMonologue, originMonologue, 0, transparentColor);
                 if (IsKeyPressed(KEY_P)) {
                     if (currentLine < maxLines - 1) {
                         currentLine++;
                     }
-                    if (currentLine== maxLines-1)
-                    {
-                        Rectangle dimMonologue = { 2000, 2000, 1000, 300 };
-
-                        UnloadTexture(dialogue_box_texture); // Ne pas oublier de décharger la texture pour libérer la ressource
-
-                    }
+                    
                 }  
-                DrawTexturePro(dialogue_box_texture, sourceMonologue, dimMonologue, originMonologue, 0, transparentColor);
+                if (currentLine == maxLines - 1) {
+                    displayText0 = !displayText0;
+                    UnloadTexture(dialogue_box_texture); // Décharger la texture
+                    dialogue_box_texture.id = 0; // Assure-toi de réinitialiser l'ID après le déchargement
+                }
                 
                 if (displayText0) {
-                    DrawText("appuier sur P pour continuer", 800, 300, 18, RED);  //changer la couleur en black 
-                }
-                if (currentLine < maxLines) {
-                    DrawText(monologue[currentLine], 250, 180, 30, RED);
-
-
+                    DrawTexturePro(dialogue_box_texture, sourceMonologue, dimMonologue, originMonologue, 0, transparentColor);
+                    if (currentLine < maxLines) {
+                        DrawText(monologue[currentLine], 250, 180, 30, RED);
+                        DrawText("appuier sur P pour continuer", 800, 300, 18, RED);  
+                    }
                 }
 
                 break;
