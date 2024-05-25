@@ -12,7 +12,7 @@ int main() {
         SetTraceLogLevel(LOG_ALL); // Activer les logs détaillés
 
 
-    // Charger l'image du personnage
+    // Charger les images 
     Image player = LoadImage("src/player.png");
     Image ESIEA_logo = LoadImage("src/ESIEA-logo.png");
     Image dialogue_box = LoadImage("src/dialogue_box.png");
@@ -24,6 +24,10 @@ int main() {
     UnloadImage(player);
     UnloadImage(ESIEA_logo);
     UnloadImage(dialogue_box);
+
+    // Charger les sons
+    InitAudioDevice();
+    Sound son_start = LoadSound("src/voracious.mp3");  
 
 
     //generation du labyrinthe §§§§§§§§§§§§§§§§§§§§§
@@ -40,11 +44,13 @@ int main() {
     SetTargetFPS(60); // Définir le FPS pour une animation fluide
     
     char *monologue[] = {
-        "Bienvenue dans notre jeu!",
-        "Appuyez sur 'P' pour continuer le monologue.",
-        "Chaque pression vous mènera à la prochaine partie de l'histoire.",
-        "C'est la fin de notre démonstration. Merci!"
+        "Bienvenue jeune aventurier dans notre jeu éducatif !",
+        "Ton rôle est de monter au dernier étage de cette tour.",
+        "Afin de voir si tu es bien un pro des graphes.",
+        "Es-tu prêt ?",
+        "Parfait !! Dans ce cas, bienvenue au premier étage.\nDans chaque étage, tu auras des défis à réaliser\n afin de pouvoir continuer ton ascension. ",
     };
+
     int maxLines = sizeof(monologue) / sizeof(monologue[0]);
     int currentLine = 0;
     // Définir les états de jeu
@@ -55,6 +61,7 @@ int main() {
     // Boucle principale du jeu
     while (!WindowShouldClose()) {    // Détecter la fermeture de la fenêtre
         double currentTime = GetTime();
+
         // Mise à jour des entrées
         if (currentScreen == TITLE && IsKeyPressed(KEY_ENTER) && currentTime - lastKeyPressTime > 0.5) 
         {
@@ -79,6 +86,8 @@ int main() {
 
         switch (currentScreen) {
             case TITLE: 
+                PlaySound(son_start);
+
                 DrawText("Appuyez sur 'ENTRER' pour commencer", 200, screenHeight/2 -100, 45, LIGHTGRAY);
                 DrawTexture(player_texture, screenWidth/2-50, screenHeight/2 , WHITE);
                 //DrawTexture(ESIEA_logo_texture, screenWidth - screenWidth/2, 300, WHITE);
@@ -107,7 +116,7 @@ int main() {
 
                 DrawTexturePro(dialogue_box_texture, sourceMonologue, dimMonologue, originMonologue, 0, WHITE);
                 //DrawTexture(dialogue_box_texture, 100, 180 , WHITE);
-                DrawText("appuier sur P pour continuer", 300, 230, 10, RED);  //changer la couleur en black 
+                DrawText("appuier sur P pour continuer", 500, 400, 20, RED);  //changer la couleur en black 
                 if (currentLine < maxLines) {
                     DrawText(monologue[currentLine], 190, 200, 30, RED);
 
@@ -134,7 +143,8 @@ int main() {
 
     // De-initialisation
     UnloadTexture(ESIEA_logo_texture); // Ne pas oublier de décharger la texture pour libérer la ressource
-    
+    UnloadSound(son_start);  // Libère la mémoire utilisée par le son fxWav
+    CloseAudioDevice();  // Ferme le dispositif audio
     UnloadTexture(player_texture); // Ne pas oublier de décharger la texture pour libérer la ressource
     CloseWindow();        // Ferme la fenêtre et termine le programme
 
