@@ -71,12 +71,22 @@ void GenerateMazeRecursiveBacktracker(Maze *maze) {
 }
 
 void RenderMaze(Maze *maze) {
+    int mazeWidthTotal = maze->width * CELL_SIZE;
+    int mazeHeightTotal = maze->height * CELL_SIZE;
+
+    int startX = (GetScreenWidth() - mazeWidthTotal) /4;
+    int startY = (GetScreenHeight() - mazeHeightTotal) / 2;
+
     for (int y = 0; y < maze->height; y++) {
         for (int x = 0; x < maze->width; x++) {
-            int x1 = x * CELL_SIZE;
-            int y1 = y * CELL_SIZE;
-            if (maze->grid[y][x] & S) DrawLine(x1, y1 + CELL_SIZE, x1 + CELL_SIZE, y1 + CELL_SIZE, BLACK);
-            if (maze->grid[y][x] & E) DrawLine(x1 + CELL_SIZE, y1, x1 + CELL_SIZE, y1 + CELL_SIZE, BLACK);
+            int x1 = startX + x * CELL_SIZE;
+            int y1 = startY + y * CELL_SIZE;
+
+            if (maze->grid[y][x] & S)
+                DrawLine(x1, y1 + CELL_SIZE, x1 + CELL_SIZE, y1 + CELL_SIZE, BLACK);
+            if (maze->grid[y][x] & E)
+                DrawLine(x1 + CELL_SIZE, y1, x1 + CELL_SIZE, y1 + CELL_SIZE, BLACK);
         }
     }
 }
+

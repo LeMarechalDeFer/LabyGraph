@@ -29,8 +29,7 @@ int main() {
     InitAudioDevice();
     Sound son_start = LoadSound("src/voracious.mp3");  
 
-
-    //generation du labyrinthe §§§§§§§§§§§§§§§§§§§§§
+ 
      // Initialiser le générateur de nombres aléatoires
     srand(time(NULL));
 
@@ -75,10 +74,7 @@ int main() {
             lastKeyPressTime = currentTime;
         }
         
-       /* if ((currentScreen = TITLE) && IsKeyPressed(KEY_RIGHT))
-        {
-            currentScreen = LEVEL1;
-        }*/
+       
         // Commence à dessiner
         BeginDrawing();
 
@@ -103,22 +99,38 @@ int main() {
 
                  // Fonction pour dessiner le labyrinthe
                 RenderMaze(&maze);
-
+                
                 //Monologue 
+
+                bool displayText0 = true; // Variable contrôlant l'affichage du texte
+
+                
+                Rectangle sourceMonologue = { 0, 0, (float)dialogue_box_texture.width, (float)dialogue_box_texture.height };
+                Rectangle dimMonologue = { 200, 50, 1000, 300 };
+                Vector2 originMonologue = { 0, 0 };
+
+                Color transparentColor = Fade(WHITE, 1.0f);  // Ajuste le second paramètre pour contrôler la transparence 1.0 =100%
+
                 if (IsKeyPressed(KEY_P)) {
                     if (currentLine < maxLines - 1) {
                         currentLine++;
                     }
-                }  
-                Rectangle sourceMonologue = { 0, 0, (float)dialogue_box_texture.width, (float)dialogue_box_texture.height };
-                Rectangle dimMonologue = { 100, 130, 1000, 300 };
-                Vector2 originMonologue = { 0, 0 };
+                    if (currentLine== maxLines-1)
+                    {
+                        Rectangle dimMonologue = { 2000, 2000, 1000, 300 };
 
-                DrawTexturePro(dialogue_box_texture, sourceMonologue, dimMonologue, originMonologue, 0, WHITE);
-                //DrawTexture(dialogue_box_texture, 100, 180 , WHITE);
-                DrawText("appuier sur P pour continuer", 500, 400, 20, RED);  //changer la couleur en black 
+                        UnloadTexture(dialogue_box_texture); // Ne pas oublier de décharger la texture pour libérer la ressource
+
+                    }
+                }  
+                DrawTexturePro(dialogue_box_texture, sourceMonologue, dimMonologue, originMonologue, 0, transparentColor);
+                
+                if (displayText0) {
+                    DrawText("appuier sur P pour continuer", 800, 300, 18, RED);  //changer la couleur en black 
+                }
                 if (currentLine < maxLines) {
-                    DrawText(monologue[currentLine], 190, 200, 30, RED);
+                    DrawText(monologue[currentLine], 250, 180, 30, RED);
+
 
                 }
 
