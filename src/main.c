@@ -138,7 +138,21 @@ int main() {
                     int bordergraph = 5; 
                     DrawRectangleLinesEx(rec_graph, bordergraph, BLACK);
 
-                
+                    // player helper
+                    DrawTexture(player_texture, 1000, 70, WHITE);
+
+                    // Paramètres du rectangle arrondi (bulle)
+                    Rectangle rect_bulle = { 930, 60, 100, 50 };
+                    float roundness = 1.0;  // Niveau d'arrondi des coins, 0.0 à 1.0
+                    int segments = 20;      // Nombre de segments pour dessiner les coins arrondis
+                    int borderbulle = 2; 
+                    // Dessiner un rectangle arrondi (bulle)
+                    DrawRectangleRounded(rect_bulle, roundness, segments, GRAY);
+                    DrawRectangleRoundedLinesEx(rect_bulle,roundness,segments,borderbulle,BLACK);
+                    //texte dans bulle
+                    DrawText("de l'aide?",935,76,20,BLACK);
+
+
 
                  // Fonction pour dessiner le labyrinthe
                 RenderMaze(&maze);
