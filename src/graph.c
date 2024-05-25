@@ -71,11 +71,11 @@ void GenerateMazeRecursiveBacktracker(Maze *maze) {
 }
 
 void RenderMaze(Maze *maze) {
-    int mazeWidthTotal = maze->width * CELL_SIZE;
-    int mazeHeightTotal = maze->height * CELL_SIZE;
+    //int mazeWidthTotal = maze->width * CELL_SIZE;
+    //int mazeHeightTotal = maze->height * CELL_SIZE;
 
-    int startX = (GetScreenWidth() - mazeWidthTotal) /4;
-    int startY = (GetScreenHeight() - mazeHeightTotal) / 2;
+    int startX = 70;//(GetScreenWidth() - mazeWidthTotal) /4;
+    int startY = 160;//(GetScreenHeight() - mazeHeightTotal) / 2;
 
     for (int y = 0; y < maze->height; y++) {
         for (int x = 0; x < maze->width; x++) {

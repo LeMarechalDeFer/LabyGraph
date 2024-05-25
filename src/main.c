@@ -83,6 +83,10 @@ int main() {
         switch (currentScreen) {
             case TITLE: 
                 PlaySound(son_start);
+                if (IsKeyPressed(KEY_K))
+                {
+                     UnloadSound(son_start);  // Libère la mémoire utilisée par le son 
+                }
 
                 DrawText("Appuyez sur 'ENTRER' pour commencer", 200, screenHeight/2 -100, 45, LIGHTGRAY);
                 DrawTexture(player_texture, screenWidth/2-50, screenHeight/2 , WHITE);
@@ -94,8 +98,47 @@ int main() {
                 DrawTexturePro(ESIEA_logo_texture, sourceRec, destRec, origin, 0, WHITE);
             break;
             case GAMEPLAY:
+
+
+                if (IsKeyPressed(KEY_K))
+                {
+                     UnloadSound(son_start);  // Libère la mémoire utilisée par le son 
+                }
                 // Ici, vous devriez mettre le code pour afficher le premier niveau du jeu
-                DrawText("Niveau 1 ~ BELLMAN", screenWidth/2-200, 0, 60, LIGHTGRAY);
+                DrawText("Niveau 1 ~ BELLMAN", 300, 0, 60, LIGHTGRAY);
+
+
+                    // rectangle state player
+                    Rectangle rec_player = { 585, 160, 420, 200 };  // Utilise la structure Rectangle pour déclarer
+                    DrawRectangle(rec_player.x, rec_player.y, rec_player.width, rec_player.height, LIGHTGRAY);
+                    int borderplayer = 5; // Épaisseur de la bordure
+                    DrawRectangleLinesEx(rec_player,borderplayer , BLACK);
+
+                    // rectangle state mob
+                    Rectangle rec_mob = { 585, 400, 420, 220 };  
+                    DrawRectangle(rec_mob.x, rec_mob.y, rec_mob.width, rec_mob.height, LIGHTGRAY);
+                    int bordermob = 5; 
+                    DrawRectangleLinesEx(rec_mob, bordermob, BLACK);
+
+                    // rectangle indication deplacement
+                    Rectangle rec_indication = { 20, 650, 565, 140 }; 
+                    DrawRectangle(rec_indication.x, rec_indication.y, rec_indication.width, rec_indication.height, LIGHTGRAY);
+                    int borderdeplacement = 5; 
+                    DrawRectangleLinesEx(rec_indication, borderdeplacement, BLACK);
+
+                    // rectangle consigne 
+                    Rectangle rec_consigne = { 585, 650, 450, 140 }; 
+                    DrawRectangle(rec_consigne.x, rec_consigne.y, rec_consigne.width, rec_consigne.height, LIGHTGRAY);
+                    int borderconsigne = 5; 
+                    DrawRectangleLinesEx(rec_consigne, borderconsigne, RED);    
+
+                    // rectangle graph 
+                    Rectangle rec_graph = { 70, 160, 470, 470 }; 
+                    DrawRectangle(rec_graph.x, rec_graph.y, rec_graph.width, rec_graph.height, LIGHTGRAY);
+                    int bordergraph = 5; 
+                    DrawRectangleLinesEx(rec_graph, bordergraph, BLACK);
+
+                
 
                  // Fonction pour dessiner le labyrinthe
                 RenderMaze(&maze);
@@ -131,11 +174,13 @@ int main() {
                     }
                 }
 
+
                 break;
                 // Ajoutez la logique du jeu ici
             case EXPLANATION:
               // Display une deuxième fenêtre
-                DrawText("Fonction Bellman-Ford(G = (S, A), poids, s) \n pour u dans S faire \n |d[u] = +infini \n |pred[u] = null \n d[s] = 0 -> Boucle principale \n pour k = 1 à taille(S) - 1 faire \n|pour chaque arc (u, v) du graphe faire \n|      |    si d[u] + poids(u, v) < d[v] alors \n|      |    |    d[v] := d[u] + poids(u, v) \n|      |    |    pred[v]:= u \n retourner d, pred", 190, 300, 20, DARKGRAY);
+                DrawText("Fonction Bellman-Ford(G = (S, A), poids, s) \n pour u dans S faire \n |d[u] = +infini \n |pred[u] = null \n d[s] = 0 -> Boucle principale \n pour k = 1 à taille(S) - 1 faire \n|pour chaque arc (u, v) du graphe faire \n|      |    si d[u] + poids(u, v) < d[v] alors \n|      |    |    d[v] := d[u] + poids(u, v) \n|      |    |    pred[v]:= u \n retourner d, pred",
+                 190, 300, 20, DARKGRAY);
                 break;
            /* case LEVEL1:
                 DrawText("Appuyez sur 'ENTRER' pour commencer", 190, 200, 20, LIGHTGRAY);
