@@ -16,10 +16,8 @@
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
 
-// Types d'ennemis
-#define TROLL 0
-#define GOBELIN 1
-#define LUTIN 2
+// Types d'ennemis -> Dans un Typedef enu Enemy_Type
+
 
 
 //definition des level ac
@@ -63,12 +61,24 @@ typedef struct Enemy {
     int strength;   // Force ou nombre d'ennemis dans un couloir
 } Enemy;
 
+typedef enum Enemy_Type
+{
+    TROLL,
+    GOBELIN,
+    LUTIN
+} Enemy_Type;
+
+
 // Structure pour représenter le joueur
 typedef struct Player {
     int currentNode;    // Noeud où se trouve actuellement le joueur
     int health;         // Santé du joueur
 } Player;
 
+typedef struct character {
+    int x;
+    int y;
+} character;
 
 // Structure pour représenter le labyrinthe
 typedef struct Maze {

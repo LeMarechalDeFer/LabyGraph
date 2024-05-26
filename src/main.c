@@ -1,16 +1,20 @@
 #include "../include/graph.h"
 #include "raylib.h"
-//#include "gamestate.h"
-//cc game.c -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
+// #include "gamestate.h"
+//  cc game.c -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
   
+
+
+
 int main() {
     // Initialisation de Raylib
-    const int screenWidth = 1200;
-    const int screenHeight = 800;
+
+    int screenWidth = 1200;
+    int screenHeight = 800;
+    const float characterSpeed = 200.0f;
 
     InitWindow(screenWidth, screenHeight, "Menu du jeu éducatif");
         SetTraceLogLevel(LOG_ALL); // Activer les logs détaillés
-
 
     // Charger les images 
     Image player = LoadImage("src/player.png");
@@ -20,6 +24,8 @@ int main() {
     Texture2D player_texture = LoadTextureFromImage(player);
     Texture2D ESIEA_logo_texture = LoadTextureFromImage(ESIEA_logo);
     Texture2D dialogue_box_texture = LoadTextureFromImage(dialogue_box);
+
+    Rectangle character = { 200, 300, 50, 50 };
 
     UnloadImage(player);
     UnloadImage(ESIEA_logo);
@@ -42,7 +48,8 @@ int main() {
 
     SetTargetFPS(60); // Définir le FPS pour une animation fluide
     
-    char *monologue[] = {
+    char *monologue[] = 
+    {
         "Bienvenue jeune aventurier dans notre jeu éducatif !",
         "Ton rôle est de monter au dernier étage de cette tour.",
         "Afin de voir si tu es bien un pro des graphes.",
@@ -53,16 +60,46 @@ int main() {
     int maxLines = sizeof(monologue) / sizeof(monologue[0]);
     int currentLine = 0;
     // Définir les états de jeu
-    //typedef enum GameScreen { LOGO = 0, TITLE,LEVEL1, GAMEPLAY, EXPLANATION ,ENDING } GameScreen;
     GameScreen currentScreen = TITLE;
     double lastKeyPressTime = 0;  // Temps de la dernière pression de touche
 
     // Boucle principale du jeu
     while (!WindowShouldClose()) {    // Détecter la fermeture de la fenêtre
         double currentTime = GetTime();
+        float deltaTime = GetFrameTime();
 
+        // Condition to make the circle stay in the maze
+        if (character.x > 535 - 1) {             // -> Right side of the maze coordinates : 535
+            character.x = 535 - 1;
+        }
+        if (character.x < 78) {
+            character.x = 78;                   // -> Left side of the maze coordinates : 78
+        }
+        if (character.y > 622 - 1) {            // -> Bottom side of the maze coordinates : 622
+            character.y = 622 - 1;
+        }
+        if (character.y < 167) {                // -> Top side of the maze coordinates : 167
+            character.y = 167;
+        }
+
+            if (IsKeyDown(KEY_RIGHT)) 
+                {
+                    character.x += characterSpeed * deltaTime;
+                }
+            if (IsKeyDown(KEY_LEFT))
+                {
+                    character.x -= characterSpeed * deltaTime;
+                }
+            if (IsKeyDown(KEY_UP)) 
+                {
+                    character.y -= characterSpeed * deltaTime;
+                }
+            if (IsKeyDown(KEY_DOWN)) 
+                {
+                    character.y += characterSpeed * deltaTime;
+                }
         // Mise à jour des entrées
-        if (currentScreen == TITLE && IsKeyPressed(KEY_ENTER) && currentTime - lastKeyPressTime > 0.5) 
+        if (currentScreen == TITLE && IsKeyPressed(KEY_ENTER) && currentTime - lastKeyPressTime > 0.5)
         {
             currentScreen = GAMEPLAY; // Commence le jeu    
             lastKeyPressTime = currentTime;  // Mettre à jour le temps de la dernière action
@@ -73,8 +110,6 @@ int main() {
             currentScreen = EXPLANATION;
             lastKeyPressTime = currentTime;
         }
-        
-       
         // Commence à dessiner
         BeginDrawing();
 
@@ -87,7 +122,6 @@ int main() {
                 {
                      UnloadSound(son_start);  // Libère la mémoire utilisée par le son 
                 }
-
                 DrawText("Appuyez sur 'ENTRER' pour commencer", 200, screenHeight/2 -100, 45, LIGHTGRAY);
                 DrawTexture(player_texture, screenWidth/2-50, screenHeight/2 , WHITE);
                 //DrawTexture(ESIEA_logo_texture, screenWidth - screenWidth/2, 300, WHITE);
@@ -97,12 +131,16 @@ int main() {
 
                 DrawTexturePro(ESIEA_logo_texture, sourceRec, destRec, origin, 0, WHITE);
             break;
-            case GAMEPLAY:
+            case EXPLANATION:
+                DrawText("Fonction Bellman-Ford(G = (S, A), poids, s) \n pour u dans S faire \n |d[u] = +infini \n |pred[u] = null \n d[s] = 0 -> Boucle principale \n pour k = 1 à taille(S) - 1 faire \n|pour chaque arc (u, v) du graphe faire \n|      |    si d[u] + poids(u, v) < d[v] alors \n|      |    |    d[v] := d[u] + poids(u, v) \n|      |    |    pred[v]:= u \n retourner d, pred",
+                 190, 300, 20, DARKGRAY);
+                break;
 
+            case GAMEPLAY:
 
                 if (IsKeyPressed(KEY_K))
                 {
-                     UnloadSound(son_start);  // Libère la mémoire utilisée par le son 
+                    UnloadSound(son_start);  // Libère la mémoire utilisée par le son 
                 }
                 // Ici, vous devriez mettre le code pour afficher le premier niveau du jeu
                 DrawText("Niveau 1 ~ BELLMAN", 300, 0, 60, LIGHTGRAY);
@@ -118,6 +156,13 @@ int main() {
                     Rectangle rec_mob = { 585, 400, 420, 220 };  
                     DrawRectangle(rec_mob.x, rec_mob.y, rec_mob.width, rec_mob.height, LIGHTGRAY);
                     int bordermob = 5; 
+
+                  /*  --> To display the mob POWER
+                    char mob_power_text[10];
+                    snprintf(mob_power_text, sizeof(mob_power_text), "%d", 2);
+                    int textWidth = MeasureText(mob_power_text, 20);
+                    DrawText(mob_power_text, rec_mob.x - textWidth/2, rec_mob.y - 10, 20, WHITE);*/
+
                     DrawRectangleLinesEx(rec_mob, bordermob, BLACK);
 
                     // rectangle indication deplacement
@@ -140,6 +185,11 @@ int main() {
 
                     // player helper
                     DrawTexture(player_texture, 1000, 70, WHITE);
+                    // -> The player who parcours the maze
+                    Vector2 characterPos = {character.x, character.y};
+                    DrawCircleV(characterPos, 3, BLACK); 
+
+                    
 
                     // Paramètres du rectangle arrondi (bulle)
                     Rectangle rect_bulle = { 930, 60, 100, 50 };
@@ -149,31 +199,31 @@ int main() {
                     // Dessiner un rectangle arrondi (bulle)
                     DrawRectangleRounded(rect_bulle, roundness, segments, GRAY);
                     DrawRectangleRoundedLinesEx(rect_bulle,roundness,segments,borderbulle,BLACK);
+
                     //texte dans bulle
-                    DrawText("de l'aide?",935,76,20,BLACK);
-
-
+                    DrawText("  Aide ?",935,76,20,BLACK);
 
                  // Fonction pour dessiner le labyrinthe
-                RenderMaze(&maze);
+                    RenderMaze(&maze);
                 
                 //Monologue 
 
                 bool displayText0 = true; // Variable contrôlant l'affichage du texte
 
-                
                 Rectangle sourceMonologue = { 0, 0, (float)dialogue_box_texture.width, (float)dialogue_box_texture.height };
                 Rectangle dimMonologue = { 200, 50, 1000, 300 };
                 Vector2 originMonologue = { 0, 0 };
 
                 Color transparentColor = Fade(WHITE, 1.0f);  // Ajuste le second paramètre pour contrôler la transparence 1.0 =100%
-                    DrawTexturePro(dialogue_box_texture, sourceMonologue, dimMonologue, originMonologue, 0, transparentColor);
+                DrawTexturePro(dialogue_box_texture, sourceMonologue, dimMonologue, originMonologue, 0, transparentColor);
+
                 if (IsKeyPressed(KEY_P)) {
                     if (currentLine < maxLines - 1) {
                         currentLine++;
                     }
                     
                 }  
+
                 if (currentLine == maxLines - 1) {
                     displayText0 = !displayText0;
                     UnloadTexture(dialogue_box_texture); // Décharger la texture
@@ -184,21 +234,10 @@ int main() {
                     DrawTexturePro(dialogue_box_texture, sourceMonologue, dimMonologue, originMonologue, 0, transparentColor);
                     if (currentLine < maxLines) {
                         DrawText(monologue[currentLine], 250, 180, 30, RED);
-                        DrawText("appuier sur P pour continuer", 800, 300, 18, RED);  
+                        DrawText("Appuier sur P pour continuer", 800, 300, 18, RED);  
                     }
                 }
-
-
                 break;
-                // Ajoutez la logique du jeu ici
-            case EXPLANATION:
-              // Display une deuxième fenêtre
-                DrawText("Fonction Bellman-Ford(G = (S, A), poids, s) \n pour u dans S faire \n |d[u] = +infini \n |pred[u] = null \n d[s] = 0 -> Boucle principale \n pour k = 1 à taille(S) - 1 faire \n|pour chaque arc (u, v) du graphe faire \n|      |    si d[u] + poids(u, v) < d[v] alors \n|      |    |    d[v] := d[u] + poids(u, v) \n|      |    |    pred[v]:= u \n retourner d, pred",
-                 190, 300, 20, DARKGRAY);
-                break;
-           /* case LEVEL1:
-                DrawText("Appuyez sur 'ENTRER' pour commencer", 190, 200, 20, LIGHTGRAY);
-                break;*/
             case ENDING:
                 DrawText("Fin du jeu", 350, 200, 20, LIGHTGRAY);
                 break;
