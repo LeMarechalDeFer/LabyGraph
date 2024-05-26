@@ -2,6 +2,9 @@
 #include "../include/graph.h"
 #define CELL_SIZE 40
 
+
+
+// Tableau de lettres associées aux types d'ennemis
 const char *enemyLetters[] = { "L", "T", "G" };
 
 void InitializeGraph(Graph *graph) {
@@ -82,16 +85,31 @@ void ColorEdges(Graph *graph) {
     }
 }
 void RenderMaze(Maze *maze) {
+
+    int rectX = 70;
+    int rectY = 160;
+    int rectWidth = 470;
+    int rectHeight = 470;
+
+    // Calculate the scaling factors
+    float scaleX = (float)rectWidth / (WIDTH - 1);
+    float scaleY = (float)rectHeight / (HEIGHT - 1);
+
     for (int i = 0; i < maze->graph.numEdges; i++) {
         Edge edge = maze->graph.edges[i];
         Node startNode = maze->graph.nodes[edge.start];
         Node endNode = maze->graph.nodes[edge.end];
 
-        DrawLine(startNode.x * 100, startNode.y * 100, endNode.x * 100, endNode.y * 100, BLACK);
+        int startX = rectX + startNode.x * scaleX;
+        int startY = rectY + startNode.y * scaleY;
+        int endX = rectX + endNode.x * scaleX;
+        int endY = rectY + endNode.y * scaleY;
+
+       DrawLine(startX, startY, endX, endY, BLACK);
 
         char enemyLabel[10];
         snprintf(enemyLabel, sizeof(enemyLabel), "%s %d", enemyLetters[edge.enemy_type], edge.number_enemy);
-        DrawText(enemyLabel, (startNode.x * 100 + endNode.x * 100) / 2, (startNode.y * 100 + endNode.y * 100) / 2, 20, RED);
+        DrawText(enemyLabel, (startX + endX) / 2, (startY + endY) / 2, 20, RED);
     }
 }
 

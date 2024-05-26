@@ -13,6 +13,15 @@ int main() {
     int screenWidth = 1200;
     int screenHeight = 800;
 
+    int rectX = 70;
+    int rectY = 160;                 // -> Player start points
+    int rectWidth = 470;
+    int rectHeight = 470;
+
+    // Calculate the scaling factors
+    float scaleX = (float)rectWidth / (WIDTH - 1);
+    float scaleY = (float)rectHeight / (HEIGHT - 1);
+
     InitWindow(screenWidth, screenHeight, "Menu du jeu éducatif");
         SetTraceLogLevel(LOG_ALL); // Activer les logs détaillés
 
@@ -35,7 +44,6 @@ int main() {
     // Charger les sons
     InitAudioDevice();
     Sound son_start = LoadSound("src/voracious.mp3");  
-
  
      // Initialiser le générateur de nombres aléatoires
     srand(time(NULL));
@@ -169,32 +177,12 @@ int main() {
 
                     // player helper
                     DrawTexture(player_texture, 1000, 70, WHITE);
-              
-               /* for (int i = 0; i < MAX_ENEMIES; i++) 
-                    {    
-                        Vector2 enemyPos = { enemies[i].x * CELL_SIZE + CELL_SIZE / 2 + 70, enemies[i].y * CELL_SIZE + CELL_SIZE / 2 + 160 };
-                        DrawText(TextFormat("%d", enemies[i].strength),enemyPos.x,enemyPos.y, enemies[i].radius, BLACK);
-                    }
-
-                for (int i = 0; i < MAX_ENEMIES; i++) 
-                {
-                    if (CheckCollisionPlayerEnemy(character, enemies[i])) 
-                    {
-                        playerHealth -= enemies[i].strength; // Decrease player's health based on enemy's power
-                        if (playerHealth <= 0) 
-                        {
-                            currentScreen = ENDING; // Game over condition, handle as needed
-                        }
-                    }
-                    if (CheckCollisionPlayerEnemy(character, enemies[i]))
-                    {
-                        enemies[i].strength = 0;
-                    }
-                }*/
 
 
                 Node currentNode = maze.graph.nodes[player.currentNode];
-                DrawCircle(currentNode.x * 100, currentNode.y * 100, 10, BLUE);
+                int playerX = rectX + currentNode.x * scaleX;
+                int playerY = rectY + currentNode.y * scaleY;
+                DrawCircle(playerX, playerY, 10, BLUE);
 
                     // Draw the player's health bar
                    /* Vector2 HealthPos = { characterPos.x - 5, characterPos.y - 10 };
