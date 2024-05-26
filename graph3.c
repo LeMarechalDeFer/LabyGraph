@@ -153,6 +153,9 @@ void GenerateMaze(Maze *maze, int complexity) {
 }
 
 int main() {
+    // Initialisation du générateur de nombres aléatoires
+    srand(time(NULL));
+    
     // Initialisation de la fenêtre Raylib
     InitWindow(800, 600, "Maze Game");
 
