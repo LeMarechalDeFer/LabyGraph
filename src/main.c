@@ -36,7 +36,7 @@ int main() {
     Texture2D troll_texture = LoadTextureFromImage(troll);
 
     
-    Rectangle character = { 200, 300, 50, 50};
+    Rectangle character = { 200, 300, 10, 10};
     int playerHealth = MAX_HEALTH;
     UnloadImage(player);
     UnloadImage(ESIEA_logo);

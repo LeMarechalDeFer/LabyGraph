@@ -107,6 +107,7 @@ void InitializeEnemies(Enemy enemies[], Maze *maze) {
         }
     }
 }
+
 bool CheckCollisionPlayerEnemy(Rectangle player, Enemy enemy) {
     return CheckCollisionCircleRec((Vector2){player.x + player.width / 2, player.y + player.height / 2}, 
                                     player.width / 2, 

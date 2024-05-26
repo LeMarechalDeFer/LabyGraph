@@ -103,7 +103,7 @@ void AddEdge(Graph *graph, int start, int end, int weight);
 // Fonctions pour gérer le joueur
 void InitializePlayer(Player *player, int startNode);
 void MovePlayer(Player *player, int nextNode);
-
+bool CheckCollisionPlayerEnemy(Rectangle player, Enemy enemy);
 
 // Fonctions pour gérer le labyrinthe
 void InitializeMaze(Maze *maze, int width, int height); // void InitializeMaze(Maze *maze);
