@@ -2,6 +2,8 @@
 #include "../include/graph.h"
 #define CELL_SIZE 40
 
+const char *enemyLetters[] = { "L", "T", "G" };
+
 void InitializeGraph(Graph *graph) {
     graph->numNodes = 0;
     graph->numEdges = 0;
@@ -77,12 +79,8 @@ void ColorEdges(Graph *graph) {
                 break;
             }
         }
-
-        // Assigner le type d'ennemi à l'arête
-        graph->edges[i].weight = edgeColors[i];
     }
 }
-
 void RenderMaze(Maze *maze) {
     for (int i = 0; i < maze->graph.numEdges; i++) {
         Edge edge = maze->graph.edges[i];
@@ -91,11 +89,12 @@ void RenderMaze(Maze *maze) {
 
         DrawLine(startNode.x * 100, startNode.y * 100, endNode.x * 100, endNode.y * 100, BLACK);
 
-        const char *enemyTypes[] = { "T", "G", "L" }; // T for Troll, G for Gobelin, L for Lutin
-        const char *enemyType = enemyTypes[edge.weight % 3];
-        DrawText(enemyType, (startNode.x * 100 + endNode.x * 100) / 2, (startNode.y * 100 + endNode.y * 100) / 2, 20, RED);
+        char enemyLabel[10];
+        snprintf(enemyLabel, sizeof(enemyLabel), "%s %d", enemyLetters[edge.enemy_type], edge.number_enemy);
+        DrawText(enemyLabel, (startNode.x * 100 + endNode.x * 100) / 2, (startNode.y * 100 + endNode.y * 100) / 2, 20, RED);
     }
 }
+
 void PrintPath(int *predecessors, int startNode, int goalNode) {
     // Paramètres inutilisés
     (void)predecessors;
@@ -110,15 +109,33 @@ void GenerateMaze(Maze *maze, int complexity) {
     (void)complexity;
 }
 
-void MovePlayer(Player *player, int nextNode) {
-    player->currentNode = nextNode;
+bool MovePlayer(Player *player, Maze *maze, int nextNode) {
+    // Trouver l'arête entre le nœud actuel et le prochain nœud
+    for (int i = 0; i < maze->graph.numEdges; i++) {
+        Edge edge = maze->graph.edges[i];
+        if ((edge.start == player->currentNode && edge.end == nextNode) ||
+            (edge.end == player->currentNode && edge.start == nextNode)) {
+            player->health += edge.number_enemy; // Ajouter le nombre d'ennemis à la santé du joueur
+            player->currentNode = nextNode;
+            return true;
+        }
+    }
+    return false; // Déplacement invalide
 }
-
 void InitializePlayer(Player *player, int startNode) {
     player->currentNode = startNode;
     player->health = 100; // Ex: initial health value
 }
 
+void DrawHealthBar(Player *player) {
+    int barWidth = 200;
+    int barHeight = 20;
+    int x = 10;
+    int y = 10;
+    DrawRectangle(x, y, barWidth, barHeight, GRAY); // Fond de la barre de santé
+    DrawRectangle(x, y, barWidth * (player->health / 100.0), barHeight, RED); // Barre de santé
+    DrawRectangleLines(x, y, barWidth, barHeight, BLACK); // Bordure de la barre de santé
+}
 
 
 /*void InitializeEnemies(Enemy enemies[], Maze *maze) {

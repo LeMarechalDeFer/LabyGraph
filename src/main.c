@@ -77,18 +77,19 @@ int main() {
         // Condition to make the circle stay in the maze
 
         // Déplacement du joueur (exemple de mouvement avec les touches fléchées)
-        if (IsKeyPressed(KEY_RIGHT) && player.currentNode %  WIDTH < WIDTH - 1) {
-            MovePlayer(&player, player.currentNode + 1);
+        if (IsKeyPressed(KEY_RIGHT)) {
+            MovePlayer(&player, &maze,player.currentNode + 1);
         }
-        if (IsKeyPressed(KEY_LEFT) && player.currentNode % WIDTH > 0) {
-            MovePlayer(&player, player.currentNode - 1);
+        if (IsKeyPressed(KEY_LEFT)) {
+            MovePlayer(&player, &maze,player.currentNode - 1);
         }
-        if (IsKeyPressed(KEY_DOWN) && player.currentNode / WIDTH < HEIGHT - 1) {
-            MovePlayer(&player, player.currentNode + WIDTH);
+        if (IsKeyPressed(KEY_DOWN)) {
+            MovePlayer(&player,&maze ,player.currentNode + 5);
         }
-        if (IsKeyPressed(KEY_UP) && player.currentNode / WIDTH > 0) {
-            MovePlayer(&player, player.currentNode - WIDTH);
+        if (IsKeyPressed(KEY_UP)) {
+            MovePlayer(&player, &maze,player.currentNode - 5);
         }
+
         // Mise à jour des entrées
         if (currentScreen == TITLE && IsKeyPressed(KEY_ENTER) && currentTime - lastKeyPressTime > 0.5)
         {
@@ -213,6 +214,9 @@ int main() {
 
                  // Fonction pour dessiner le labyrinthe
                     RenderMaze(&maze);
+                    
+                // Rendu de la barre de santé
+                DrawHealthBar(&player);
                 
                 //Monologue 
 

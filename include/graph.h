@@ -48,11 +48,17 @@ typedef struct Node {
     int x, y;       // Coordonnées du noeud (utiles pour la visualisation)
 } Node;
 
+typedef enum {
+    L,
+    T,
+    G, 
+} EnemyType;
 // Structure pour représenter une arête (edge) dans le graphe
-typedef struct Edge {
-    int start;      // Identifiant du noeud de départ
-    int end;        // Identifiant du noeud de fin
-    int weight;     // Poids de l'arête (nombre d'ennemis dans le couloir)
+typedef struct {
+    int start;
+    int end;
+    int number_enemy; 
+    EnemyType enemy_type;
 } Edge;
 
 // Structure pour représenter un graphe
@@ -71,7 +77,6 @@ typedef struct Enemy {
     int strength;   // Force ou nombre d'ennemis dans un couloir
     int radius;
 } Enemy;
-
 
 
 // Structure pour représenter le joueur
@@ -102,7 +107,7 @@ void AddEdge(Graph *graph, int start, int end, int weight);
 
 // Fonctions pour gérer le joueur
 void InitializePlayer(Player *player, int startNode);
-void MovePlayer(Player *player, int nextNode);
+bool MovePlayer(Player *player, Maze *maze,int nextNode);
 //bool CheckCollisionPlayerEnemy(Rectangle player, Enemy enemy);
 
 // Fonctions pour gérer le labyrinthe
@@ -113,7 +118,7 @@ void GenerateMaze(Maze *maze, int complexity);
 void PrintPath(int *predecessors, int startNode, int goalNode);
 void FreeMaze(Maze *maze); // Ajout de cette déclaration
 
-
+void DrawHealthBar(Player *player);
 // Fonctions utilitaires
 int GetNodeIndexById(Graph *graph, int id);
 void PrintPath(int *predecessors, int startNode, int goalNode);
