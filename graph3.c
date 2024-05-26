@@ -4,6 +4,7 @@
 #include <string.h>
 #include <raylib.h>
 #include <time.h>
+#include <limits.h>
 
 #define MAX_NODES 100
 #define MAX_EDGES 200
@@ -19,6 +20,7 @@ typedef enum {
     L,
     T,
     G, 
+    M,
 } EnemyType;
 
 typedef struct {
@@ -48,7 +50,7 @@ typedef struct {
 } Maze;
 
 // Tableau de lettres associées aux types d'ennemis
-const char *enemyLetters[] = { "L", "T", "G" };
+const char *enemyLetters[] = { "L", "T", "G", "M" };
 
 // Function prototypes
 void InitializeGraph(Graph *graph);
@@ -61,6 +63,8 @@ void GenerateMaze(Maze *maze);
 void RenderMaze(Maze *maze, int screenWidth, int screenHeight, int cellSize);
 void DrawHealthBar(Player *player);
 void PrintPath(int *predecessors, int startNode, int goalNode);
+bool IsEnemyTypeValid(Maze *maze, int nodeIndex, EnemyType proposedType);
+void BellmanFord(Graph *graph, int startNode, int *distances, int *predecessors);
 
 void InitializeGraph(Graph *graph) {
     graph->numNodes = 0;
@@ -122,6 +126,16 @@ void InitializeMaze(Maze *maze, int width, int height) {
     printf("Maze initialized with width %d and height %d.\n", width, height);
 }
 
+bool IsEnemyTypeValid(Maze *maze, int nodeIndex, EnemyType proposedType) {
+    for (int i = 0; i < maze->graph.numEdges; i++) {
+        Edge edge = maze->graph.edges[i];
+        if ((edge.start == nodeIndex || edge.end == nodeIndex) && edge.enemy_type == proposedType) {
+            return false;
+        }
+    }
+    return true;
+}
+
 void GenerateMaze(Maze *maze) {
     int width = maze->width;
     int height = maze->height;
@@ -147,8 +161,8 @@ void GenerateMaze(Maze *maze) {
     int startY = 0;
 
     // Ajouter les arêtes adjacentes du premier nœud
-    if (startX < width - 1) candidateEdges[numCandidates++] = (Edge){startX * width + startY, (startX + 1) * width + startY, rand() % 10 + 1, rand() % 3};
-    if (startY < height - 1) candidateEdges[numCandidates++] = (Edge){startX * width + startY, startX * width + (startY + 1), rand() % 10 + 1, rand() % 3};
+    if (startX < width - 1) candidateEdges[numCandidates++] = (Edge){startX * width + startY, (startX + 1) * width + startY, rand() % 10 + 1, rand() % 4};
+    if (startY < height - 1) candidateEdges[numCandidates++] = (Edge){startX * width + startY, startX * width + (startY + 1), rand() % 10 + 1, rand() % 4};
 
     while (numCandidates > 0) {
         // Choisir une arête aléatoire
@@ -166,14 +180,20 @@ void GenerateMaze(Maze *maze) {
             // Marquer le nœud comme visité
             maze->walls[endY][endX] = false;
 
-            // Ajouter l'arête au graphe du labyrinthe
-            AddEdge(&maze->graph, edge.start, edge.end, edge.enemy_type, edge.number_enemy);
+            // Choisir un type d'ennemi valide pour l'arête
+            EnemyType enemyType;
+            do {
+                enemyType = rand() % 4; // Suppose 4 types d'ennemis (L, T, G, M)
+            } while (!IsEnemyTypeValid(maze, edge.start, enemyType) || !IsEnemyTypeValid(maze, edge.end, enemyType));
+
+            // Ajouter l'arête au graphe du labyrinthe avec le type d'ennemi valide
+            AddEdge(&maze->graph, edge.start, edge.end, enemyType, edge.number_enemy);
 
             // Ajouter les nouvelles arêtes candidates
-            if (endX > 0 && maze->walls[endY][endX - 1]) candidateEdges[numCandidates++] = (Edge){endY * width + endX, endY * width + (endX - 1), rand() % 10 + 1, rand() % 3};
-            if (endX < width - 1 && maze->walls[endY][endX + 1]) candidateEdges[numCandidates++] = (Edge){endY * width + endX, endY * width + (endX + 1), rand() % 10 + 1, rand() % 3};
-            if (endY > 0 && maze->walls[endY - 1][endX]) candidateEdges[numCandidates++] = (Edge){endY * width + endX, (endY - 1) * width + endX, rand() % 10 + 1, rand() % 3};
-            if (endY < height - 1 && maze->walls[endY + 1][endX]) candidateEdges[numCandidates++] = (Edge){endY * width + endX, (endY + 1) * width + endX, rand() % 10 + 1, rand() % 3};
+            if (endX > 0 && maze->walls[endY][endX - 1]) candidateEdges[numCandidates++] = (Edge){endY * width + endX, endY * width + (endX - 1), rand() % 10 + 1, enemyType};
+            if (endX < width - 1 && maze->walls[endY][endX + 1]) candidateEdges[numCandidates++] = (Edge){endY * width + endX, endY * width + (endX + 1), rand() % 10 + 1, enemyType};
+            if (endY > 0 && maze->walls[endY - 1][endX]) candidateEdges[numCandidates++] = (Edge){endY * width + endX, (endY - 1) * width + endX, rand() % 10 + 1, enemyType};
+            if (endY < height - 1 && maze->walls[endY + 1][endX]) candidateEdges[numCandidates++] = (Edge){endY * width + endX, (endY + 1) * width + endX, rand() % 10 + 1, enemyType};
         }
 
         // Retirer l'arête traitée de la liste des candidats
@@ -181,6 +201,46 @@ void GenerateMaze(Maze *maze) {
     }
 
     printf("Maze generated.\n");
+}
+
+void BellmanFord(Graph *graph, int startNode, int *distances, int *predecessors) {
+    int V = graph->numNodes;
+    int E = graph->numEdges;
+
+    // Initialisation
+    for (int i = 0; i < V; i++) {
+        distances[i] = INT_MAX;
+        predecessors[i] = -1;
+    }
+    distances[startNode] = 0;
+
+    // Relaxation des arêtes
+    for (int i = 1; i <= V - 1; i++) {
+        for (int j = 0; j < E; j++) {
+            int u = graph->edges[j].start;
+            int v = graph->edges[j].end;
+            int weight = graph->edges[j].number_enemy;
+            if (distances[u] != INT_MAX && distances[u] + weight < distances[v]) {
+                distances[v] = distances[u] + weight;
+                predecessors[v] = u;
+            }
+            if (distances[v] != INT_MAX && distances[v] + weight < distances[u]) {
+                distances[u] = distances[v] + weight;
+                predecessors[u] = v;
+            }
+        }
+    }
+
+    // Vérification des cycles négatifs
+    for (int i = 0; i < E; i++) {
+        int u = graph->edges[i].start;
+        int v = graph->edges[i].end;
+        int weight = graph->edges[i].number_enemy;
+        if (distances[u] != INT_MAX && distances[u] + weight < distances[v]) {
+            printf("Graph contains negative weight cycle\n");
+            return;
+        }
+    }
 }
 
 void RenderMaze(Maze *maze, int screenWidth, int screenHeight, int cellSize) {
@@ -211,7 +271,11 @@ void RenderMaze(Maze *maze, int screenWidth, int screenHeight, int cellSize) {
     // Dessiner les nœuds
     for (int i = 0; i < maze->graph.numNodes; i++) {
         Node node = maze->graph.nodes[i];
-        DrawCircle(node.x * cellSize + halfCell, node.y * cellSize + halfCell, 5, BLUE);
+        if (node.id == 99) {
+            DrawCircle(node.x * cellSize + halfCell, node.y * cellSize + halfCell, 10, GREEN); // Nœud de sortie en bleu
+        } else {
+            DrawCircle(node.x * cellSize + halfCell, node.y * cellSize + halfCell, 5, BLUE); // Autres nœuds en gris foncé
+        }
     }
 }
 
@@ -226,10 +290,23 @@ void DrawHealthBar(Player *player) {
 }
 
 void PrintPath(int *predecessors, int startNode, int goalNode) {
-    // Paramètres inutilisés
-    (void)predecessors;
-    (void)startNode;
-    (void)goalNode;
+    if (goalNode == -1) {
+        printf("No path from %d to %d\n", startNode, goalNode);
+        return;
+    }
+
+    int path[MAX_NODES];
+    int count = 0;
+    for (int v = goalNode; v != startNode; v = predecessors[v]) {
+        path[count++] = v;
+    }
+    path[count] = startNode;
+
+    printf("Path from %d to %d: ", startNode, goalNode);
+    for (int i = count; i >= 0; i--) {
+        printf("%d ", path[i]);
+    }
+    printf("\n");
 }
 
 int main() {
@@ -259,6 +336,14 @@ int main() {
     // Initialiser le joueur au premier nœud
     InitializePlayer(&player, 0);
 
+    // Exécuter Bellman-Ford pour trouver le chemin optimal
+    int distances[MAX_NODES];
+    int predecessors[MAX_NODES];
+    BellmanFord(&maze.graph, 0, distances, predecessors);
+
+    // Afficher le chemin optimal
+    PrintPath(predecessors, 0, mazeWidth * mazeHeight - 1);
+
     // Boucle de jeu principale
     while (!WindowShouldClose()) {
         // Déplacement du joueur (exemple de mouvement avec les touches fléchées)
@@ -275,6 +360,12 @@ int main() {
             MovePlayer(&player, &maze, player.currentNode - maze.width);
         }
 
+        // Vérifier si le joueur a atteint le nœud 99 (dernier nœud)
+        if (player.currentNode == 99) {
+            printf("Congratulations! You have reached the end of the maze.\n");
+            break; // Terminer la boucle de jeu
+        }
+
         BeginDrawing();
         ClearBackground(BLACK);
 
@@ -286,7 +377,7 @@ int main() {
 
         // Rendu du joueur
         Node currentNode = maze.graph.nodes[player.currentNode];
-        DrawCircle(currentNode.x * cellSize + cellSize / 2, currentNode.y * cellSize + cellSize / 2, 10, BLUE);
+        DrawCircle(currentNode.x * cellSize + cellSize / 2, currentNode.y * cellSize + cellSize / 2, 10, YELLOW);
 
         EndDrawing();
     }
