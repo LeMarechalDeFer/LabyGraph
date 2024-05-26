@@ -142,17 +142,18 @@ bool MovePlayer(Player *player, Maze *maze, int nextNode) {
 }
 void InitializePlayer(Player *player, int startNode) {
     player->currentNode = startNode;
-    player->health = 100; // Ex: initial health value
+    player->health = 0; // Ex: initial health value
 }
 
 void DrawHealthBar(Player *player) {
     int barWidth = 200;
     int barHeight = 20;
-    int x = 10;
-    int y = 10;
+    int x = 600;
+    int y = 200;
     DrawRectangle(x, y, barWidth, barHeight, GRAY); // Fond de la barre de santé
     DrawRectangle(x, y, barWidth * (player->health / 100.0), barHeight, RED); // Barre de santé
     DrawRectangleLines(x, y, barWidth, barHeight, BLACK); // Bordure de la barre de santé
+    DrawText(TextFormat("%d",player->health),x,y + 50,30,RED);
 }
 
 

@@ -53,6 +53,7 @@ int main() {
     // Création et initialisation du labyrinthe
     Maze maze;
     Player player;
+    ;
 
     InitializeMazeLevel1(&maze);
 
@@ -178,16 +179,6 @@ int main() {
                     // player helper
                     DrawTexture(player_texture, 1000, 70, WHITE);
 
-
-                Node currentNode = maze.graph.nodes[player.currentNode];
-                int playerX = rectX + currentNode.x * scaleX;
-                int playerY = rectY + currentNode.y * scaleY;
-                DrawCircle(playerX, playerY, 10, BLUE);
-
-                    // Draw the player's health bar
-                   /* Vector2 HealthPos = { characterPos.x - 5, characterPos.y - 10 };
-                    DrawText(TextFormat("%d",playerHealth), HealthPos.x, HealthPos.y, 5, DARKGRAY); // Health bar of the character
-                    */
                     // Paramètres du rectangle arrondi (bulle)
                     Rectangle rect_bulle = { 930, 60, 100, 50 };
                     float roundness = 1.0;  // Niveau d'arrondi des coins, 0.0 à 1.0
@@ -203,6 +194,19 @@ int main() {
                  // Fonction pour dessiner le labyrinthe
                     RenderMaze(&maze);
                     
+                Node currentNode = maze.graph.nodes[player.currentNode];
+                int playerX = rectX + currentNode.x * scaleX;
+                int playerY = rectY + currentNode.y * scaleY;
+                DrawCircle(playerX, playerY, 10, BLUE);
+                // Entrée du Maze
+                DrawText("E",65,150,30,RED); // coordonnées de l'entrée
+                // Sortie du Maze
+                DrawText("S",525,610,30,RED); // coordonnées de la sortie
+
+                if(player.currentNode == edge.end)
+                {
+                    currentScreen = ENDING;
+                }
                 // Rendu de la barre de santé
                 DrawHealthBar(&player);
                 
@@ -238,7 +242,7 @@ int main() {
                 }
                 break;
             case ENDING:
-                DrawText("Fin du jeu", 350, 200, 20, LIGHTGRAY);
+                DrawText(TextFormat("Your score is : %d",player.health), 350, 200, 20, LIGHTGRAY);
                 break;
             default:
                 break;
