@@ -272,6 +272,9 @@ void RenderMaze(Maze *maze, int screenWidth, int screenHeight, int cellSize) {
     for (int i = 0; i < maze->graph.numNodes; i++) {
         Node node = maze->graph.nodes[i];
         DrawCircle(node.x * cellSize + halfCell, node.y * cellSize + halfCell, 5, BLUE);
+        if(node.id == 99){
+            DrawCircle(node.x * cellSize + halfCell, node.y * cellSize + halfCell, 10, GREEN);
+        }
     }
 }
 
@@ -356,6 +359,12 @@ int main() {
             MovePlayer(&player, &maze, player.currentNode - maze.width);
         }
 
+        // Vérifier si le joueur a atteint le nœud 99 (dernier nœud)
+        if (player.currentNode == 99) {
+            printf("Congratulations! You have reached the end of the maze.\n");
+            break; // Terminer la boucle de jeu
+        }
+
         BeginDrawing();
         ClearBackground(BLACK);
 
@@ -367,7 +376,7 @@ int main() {
 
         // Rendu du joueur
         Node currentNode = maze.graph.nodes[player.currentNode];
-        DrawCircle(currentNode.x * cellSize + cellSize / 2, currentNode.y * cellSize + cellSize / 2, 10, BLUE);
+        DrawCircle(currentNode.x * cellSize + cellSize / 2, currentNode.y * cellSize + cellSize / 2, 10, YELLOW);
 
         EndDrawing();
     }
