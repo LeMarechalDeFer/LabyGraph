@@ -20,16 +20,28 @@ int main() {
     Image player = LoadImage("src/player.png");
     Image ESIEA_logo = LoadImage("src/ESIEA-logo.png");
     Image dialogue_box = LoadImage("src/dialogue_box.png");
+
+    // Ennemies / Sommets du graph
+    Image garde = LoadImage("src/Garde.png");
+    Image lutin = LoadImage("src/Lutin.png");
+    Image troll = LoadImage("src/Troll.png");
     
     Texture2D player_texture = LoadTextureFromImage(player);
     Texture2D ESIEA_logo_texture = LoadTextureFromImage(ESIEA_logo);
     Texture2D dialogue_box_texture = LoadTextureFromImage(dialogue_box);
+
+    Texture2D garde_texture = LoadTextureFromImage(garde);
+    Texture2D lutin_texture = LoadTextureFromImage(lutin);
+    Texture2D troll_texture = LoadTextureFromImage(troll);
 
     Rectangle character = { 200, 300, 50, 50 };
 
     UnloadImage(player);
     UnloadImage(ESIEA_logo);
     UnloadImage(dialogue_box);
+    UnloadImage(garde);
+    UnloadImage(lutin);
+    UnloadImage(troll);
 
     // Charger les sons
     InitAudioDevice();
@@ -45,6 +57,9 @@ int main() {
     Maze maze;
     InitializeMaze(&maze, 10, 10);  // 10x10 est un exemple, ajustez selon vos besoins
     GenerateMazeRecursiveBacktracker(&maze);
+   
+    Enemy enemies[MAX_ENEMIES];
+    InitializeEnemies(enemies, MAX_ENEMIES,&maze);
 
     SetTargetFPS(60); // Définir le FPS pour une animation fluide
     
@@ -185,6 +200,12 @@ int main() {
 
                     // player helper
                     DrawTexture(player_texture, 1000, 70, WHITE);
+          /*  for (int i = 0; i < MAX_ENEMIES; i++)
+                {
+                    Vector2 enemyPos = { enemies[i].x , enemies[i].y};
+                    DrawCircleV(enemyPos, enemies[i].radius, BLUE);
+                }*/
+
                     // -> The player who parcours the maze
                     Vector2 characterPos = {character.x, character.y};
                     DrawCircleV(characterPos, 3, BLACK); 
@@ -249,6 +270,9 @@ int main() {
     }
 
     // De-initialisation
+    UnloadTexture(lutin_texture);
+    UnloadTexture(garde_texture);
+    UnloadTexture(troll_texture);
     UnloadTexture(ESIEA_logo_texture); // Ne pas oublier de décharger la texture pour libérer la ressource
     UnloadSound(son_start);  // Libère la mémoire utilisée par le son fxWav
     CloseAudioDevice();  // Ferme le dispositif audio

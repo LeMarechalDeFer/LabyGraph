@@ -16,7 +16,9 @@
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
 
-// Types d'ennemis -> Dans un Typedef enu Enemy_Type
+#define TROLL 0
+#define LUTIN 1
+#define GARDE 2
 
 
 
@@ -57,16 +59,13 @@ typedef struct Graph {
 
 // Structure pour représenter un ennemi
 typedef struct Enemy {
-    int type;       // Type d'ennemi (troll, gobelin, etc.)
+    int type;      // Type d'ennemi (troll, gobelin, etc.)
+    int x;
+    int y;           // Enemy position
     int strength;   // Force ou nombre d'ennemis dans un couloir
+    int radius;
 } Enemy;
 
-typedef enum Enemy_Type
-{
-    TROLL,
-    GOBELIN,
-    LUTIN
-} Enemy_Type;
 
 
 // Structure pour représenter le joueur
@@ -115,7 +114,7 @@ void FreeMaze(Maze *maze); // Ajout de cette déclaration
 // Fonctions utilitaires
 int GetNodeIndexById(Graph *graph, int id);
 void PrintPath(int *predecessors, int startNode, int goalNode);
-
+void InitializeEnemies(Enemy enemies[],int maxEnemies, Maze *maze);
 
 // Algorithmes de plus court chemin
 void BellmanFord(Graph *graph, int startNode, int *distances, int *predecessors);
