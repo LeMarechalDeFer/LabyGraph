@@ -4,6 +4,7 @@
 #include <string.h>
 #include <raylib.h>
 #include <time.h>
+#include <limits.h>
 
 #define MAX_NODES 100
 #define MAX_EDGES 200
@@ -62,7 +63,8 @@ void GenerateMaze(Maze *maze);
 void RenderMaze(Maze *maze, int screenWidth, int screenHeight, int cellSize);
 void DrawHealthBar(Player *player);
 void PrintPath(int *predecessors, int startNode, int goalNode);
-bool IsEnemyTypeValid(Maze *maze, int nodeIndex, EnemyType proposedType) ;
+bool IsEnemyTypeValid(Maze *maze, int nodeIndex, EnemyType proposedType);
+void BellmanFord(Graph *graph, int startNode, int *distances, int *predecessors);
 
 void InitializeGraph(Graph *graph) {
     graph->numNodes = 0;
@@ -134,7 +136,6 @@ bool IsEnemyTypeValid(Maze *maze, int nodeIndex, EnemyType proposedType) {
     return true;
 }
 
-
 void GenerateMaze(Maze *maze) {
     int width = maze->width;
     int height = maze->height;
@@ -182,7 +183,7 @@ void GenerateMaze(Maze *maze) {
             // Choisir un type d'ennemi valide pour l'arête
             EnemyType enemyType;
             do {
-                enemyType = rand() % 4; // Suppose 3 types d'ennemis (L, T, G)
+                enemyType = rand() % 4; // Suppose 4 types d'ennemis (L, T, G, M)
             } while (!IsEnemyTypeValid(maze, edge.start, enemyType) || !IsEnemyTypeValid(maze, edge.end, enemyType));
 
             // Ajouter l'arête au graphe du labyrinthe avec le type d'ennemi valide
@@ -202,6 +203,45 @@ void GenerateMaze(Maze *maze) {
     printf("Maze generated.\n");
 }
 
+void BellmanFord(Graph *graph, int startNode, int *distances, int *predecessors) {
+    int V = graph->numNodes;
+    int E = graph->numEdges;
+
+    // Initialisation
+    for (int i = 0; i < V; i++) {
+        distances[i] = INT_MAX;
+        predecessors[i] = -1;
+    }
+    distances[startNode] = 0;
+
+    // Relaxation des arêtes
+    for (int i = 1; i <= V - 1; i++) {
+        for (int j = 0; j < E; j++) {
+            int u = graph->edges[j].start;
+            int v = graph->edges[j].end;
+            int weight = graph->edges[j].number_enemy;
+            if (distances[u] != INT_MAX && distances[u] + weight < distances[v]) {
+                distances[v] = distances[u] + weight;
+                predecessors[v] = u;
+            }
+            if (distances[v] != INT_MAX && distances[v] + weight < distances[u]) {
+                distances[u] = distances[v] + weight;
+                predecessors[u] = v;
+            }
+        }
+    }
+
+    // Vérification des cycles négatifs
+    for (int i = 0; i < E; i++) {
+        int u = graph->edges[i].start;
+        int v = graph->edges[i].end;
+        int weight = graph->edges[i].number_enemy;
+        if (distances[u] != INT_MAX && distances[u] + weight < distances[v]) {
+            printf("Graph contains negative weight cycle\n");
+            return;
+        }
+    }
+}
 
 void RenderMaze(Maze *maze, int screenWidth, int screenHeight, int cellSize) {
     int halfCell = cellSize / 2;
@@ -246,10 +286,23 @@ void DrawHealthBar(Player *player) {
 }
 
 void PrintPath(int *predecessors, int startNode, int goalNode) {
-    // Paramètres inutilisés
-    (void)predecessors;
-    (void)startNode;
-    (void)goalNode;
+    if (goalNode == -1) {
+        printf("No path from %d to %d\n", startNode, goalNode);
+        return;
+    }
+
+    int path[MAX_NODES];
+    int count = 0;
+    for (int v = goalNode; v != startNode; v = predecessors[v]) {
+        path[count++] = v;
+    }
+    path[count] = startNode;
+
+    printf("Path from %d to %d: ", startNode, goalNode);
+    for (int i = count; i >= 0; i--) {
+        printf("%d ", path[i]);
+    }
+    printf("\n");
 }
 
 int main() {
@@ -278,6 +331,14 @@ int main() {
 
     // Initialiser le joueur au premier nœud
     InitializePlayer(&player, 0);
+
+    // Exécuter Bellman-Ford pour trouver le chemin optimal
+    int distances[MAX_NODES];
+    int predecessors[MAX_NODES];
+    BellmanFord(&maze.graph, 0, distances, predecessors);
+
+    // Afficher le chemin optimal
+    PrintPath(predecessors, 0, mazeWidth * mazeHeight - 1);
 
     // Boucle de jeu principale
     while (!WindowShouldClose()) {
