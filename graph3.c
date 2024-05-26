@@ -271,9 +271,10 @@ void RenderMaze(Maze *maze, int screenWidth, int screenHeight, int cellSize) {
     // Dessiner les nœuds
     for (int i = 0; i < maze->graph.numNodes; i++) {
         Node node = maze->graph.nodes[i];
-        DrawCircle(node.x * cellSize + halfCell, node.y * cellSize + halfCell, 5, BLUE);
-        if(node.id == 99){
-            DrawCircle(node.x * cellSize + halfCell, node.y * cellSize + halfCell, 10, GREEN);
+        if (node.id == 99) {
+            DrawCircle(node.x * cellSize + halfCell, node.y * cellSize + halfCell, 10, GREEN); // Nœud de sortie en bleu
+        } else {
+            DrawCircle(node.x * cellSize + halfCell, node.y * cellSize + halfCell, 5, BLUE); // Autres nœuds en gris foncé
         }
     }
 }
