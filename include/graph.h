@@ -12,9 +12,10 @@
 // Définition des constantes
 #define MAX_NODES 100
 #define MAX_EDGES 200
-#define MAX_ENEMIES 50
+#define MAX_ENEMIES 20
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
+#define MAX_HEALTH 100 // -> à redéfinir après l'implémentation de l'algo
 
 #define TROLL 0
 #define LUTIN 1
@@ -114,7 +115,7 @@ void FreeMaze(Maze *maze); // Ajout de cette déclaration
 // Fonctions utilitaires
 int GetNodeIndexById(Graph *graph, int id);
 void PrintPath(int *predecessors, int startNode, int goalNode);
-void InitializeEnemies(Enemy enemies[],int maxEnemies, Maze *maze);
+void InitializeEnemies(Enemy enemies[], Maze *maze);
 
 // Algorithmes de plus court chemin
 void BellmanFord(Graph *graph, int startNode, int *distances, int *predecessors);

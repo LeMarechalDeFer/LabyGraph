@@ -34,7 +34,7 @@ int main() {
     Texture2D lutin_texture = LoadTextureFromImage(lutin);
     Texture2D troll_texture = LoadTextureFromImage(troll);
 
-    Rectangle character = { 200, 300, 50, 50 };
+    Rectangle character = { 200, 300, 50, 50};
 
     UnloadImage(player);
     UnloadImage(ESIEA_logo);
@@ -59,7 +59,7 @@ int main() {
     GenerateMazeRecursiveBacktracker(&maze);
    
     Enemy enemies[MAX_ENEMIES];
-    InitializeEnemies(enemies, MAX_ENEMIES,&maze);
+    InitializeEnemies(enemies,&maze);
 
     SetTargetFPS(60); // Définir le FPS pour une animation fluide
     
@@ -172,12 +172,6 @@ int main() {
                     DrawRectangle(rec_mob.x, rec_mob.y, rec_mob.width, rec_mob.height, LIGHTGRAY);
                     int bordermob = 5; 
 
-                  /*  --> To display the mob POWER
-                    char mob_power_text[10];
-                    snprintf(mob_power_text, sizeof(mob_power_text), "%d", 2);
-                    int textWidth = MeasureText(mob_power_text, 20);
-                    DrawText(mob_power_text, rec_mob.x - textWidth/2, rec_mob.y - 10, 20, WHITE);*/
-
                     DrawRectangleLinesEx(rec_mob, bordermob, BLACK);
 
                     // rectangle indication deplacement
@@ -200,17 +194,21 @@ int main() {
 
                     // player helper
                     DrawTexture(player_texture, 1000, 70, WHITE);
-          /*  for (int i = 0; i < MAX_ENEMIES; i++)
-                {
-                    Vector2 enemyPos = { enemies[i].x , enemies[i].y};
-                    DrawCircleV(enemyPos, enemies[i].radius, BLUE);
-                }*/
+
+                /* for (int i = 0; i < MAX_ENEMIES; i++) 
+                    {
+                        int randomised_power = GetRandomValue(1,20);
+                        Vector2 enemyPos = { enemies[i].x , enemies[i].y };
+                        DrawText(TextFormat("%d", randomised_power), enemyPos.x,enemyPos.y, 5,BLACK);
+                    }*/
 
                     // -> The player who parcours the maze
                     Vector2 characterPos = {character.x, character.y};
                     DrawCircleV(characterPos, 3, BLACK); 
 
-                    
+                    // Draw the player's health bar
+                    Vector2 HealthPos = { characterPos.x - 5, characterPos.y - 10 };
+                    DrawText(TextFormat("%d",MAX_HEALTH), HealthPos.x, HealthPos.y, 5, DARKGRAY); // Health bar of the character
 
                     // Paramètres du rectangle arrondi (bulle)
                     Rectangle rect_bulle = { 930, 60, 100, 50 };
@@ -241,8 +239,7 @@ int main() {
                 if (IsKeyPressed(KEY_P)) {
                     if (currentLine < maxLines - 1) {
                         currentLine++;
-                    }
-                    
+                    }   
                 }  
 
                 if (currentLine == maxLines - 1) {

@@ -90,17 +90,18 @@ void RenderMaze(Maze *maze) {
     }
 }
 
-void InitializeEnemies(Enemy enemies[],int maxEnemies, Maze *maze) {
+void InitializeEnemies(Enemy enemies[],Maze *maze) {
     int enemyCount = 0;
-    for (int y = 0; y < maze->width && enemyCount < 10; y++) {
-        for (int x = 0; x < maze->width && enemyCount < 10; x++) {
-            if (maze->grid[y][x] == 0 && maze->grid[y][x+1] != 0 && maze ->grid[y+1][x] &&(x != 1 || y != 1)) { // Avoid placing enemy at player start
+    for (int y = 0; y < maze->width && enemyCount < MAX_ENEMIES; y++) {
+        for (int x = 0; x < maze->width && enemyCount < MAX_ENEMIES; x++) {
+            if (maze->grid[y][x] == 0 && maze->grid[y][x+1] != 0 && maze ->grid[y+1][x] &&(x != 1 || y != 1)) 
+            { // Avoid placing enemy at player start
                 enemies[enemyCount].x = x;
                 enemies[enemyCount].y = y;
-                enemies[enemyCount].radius = CELL_SIZE / 4;
-                enemies[enemyCount].type = rand() % 3;
+                enemyCount++;
             }
         }
     }
 }
+
 
