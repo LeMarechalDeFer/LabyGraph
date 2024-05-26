@@ -21,76 +21,107 @@ void AddEdge(Graph *graph, int start, int end, int weight) {
     }
 }
 
-void InitializeMaze(Maze *maze, int width, int height) {
+void InitializeMaze(Maze *maze) {
     InitializeGraph(&maze->graph);
-    maze->width = width;
-    maze->height = height;
-    maze->grid = (int **)malloc(height * sizeof(int *));
-    for (int i = 0; i < height; i++) {
-        maze->grid[i] = (int *)malloc(width * sizeof(int));
-        memset(maze->grid[i], 0, width * sizeof(int));
-    }
+    maze->numEnemies = 0;
 }
-
-void FreeMaze(Maze *maze) {
-    for (int i = 0; i < maze->height; i++) {
-        free(maze->grid[i]);
-    }
-    free(maze->grid);
-}
-
-void CarvePassagesFrom(int cx, int cy, Maze *maze) {
-    int dx[4] = {1, -1, 0, 0};
-    int dy[4] = {0, 0, 1, -1};
-    int dirs[4] = {E, W, S, N};
-
-    for (int i = 0; i < 4; i++) {
-        int r = rand() % 4;
-        int temp = dirs[i];
-        dirs[i] = dirs[r];
-        dirs[r] = temp;
-    }
-
-    for (int i = 0; i < 4; i++) {
-        int nx = cx + dx[i];
-        int ny = cy + dy[i];
-
-        if (nx >= 0 && nx < maze->width && ny >= 0 && ny < maze->height && maze->grid[ny][nx] == 0) {
-            maze->grid[cy][cx] |= dirs[i];
-            maze->grid[ny][nx] |= (dirs[i] == N ? S : (dirs[i] == S ? N : (dirs[i] == E ? W : E)));
-            CarvePassagesFrom(nx, ny, maze);
+void InitializeMazeLevel1(Maze *maze) 
+{
+    InitializeMaze(maze);
+    // Ajouter des noeuds
+    for (int y = 0; y < HEIGHT; y++) {
+        for (int x = 0; x < WIDTH; x++) {
+            AddNode(&maze->graph, x, y);
         }
     }
+
+    // Ajouter des arêtes avec poids (nombre d'ennemis)
+    for (int y = 0; y < HEIGHT; y++) {
+        for (int x = 0; x < WIDTH; x++) {
+            int currentNode = y * WIDTH + x;
+            if (x < WIDTH - 1) { // Ajouter une arête vers la droite
+                AddEdge(&maze->graph, currentNode, currentNode + 1, rand() % 3);
+            }
+            if (y < HEIGHT - 1) { // Ajouter une arête vers le bas
+                AddEdge(&maze->graph, currentNode, currentNode + WIDTH, rand() % 3);
+            }
+        }
+    }
+    // Colorier les arêtes
+    ColorEdges(&maze->graph);
 }
 
-void GenerateMazeRecursiveBacktracker(Maze *maze) {
-    srand(time(NULL)); // Initialization of random seed
-    int startx = rand() % maze->width;
-    int starty = rand() % maze->height;
-    CarvePassagesFrom(startx, starty, maze);
+void ColorEdges(Graph *graph) {
+    int edgeColors[MAX_EDGES] = { -1 }; // Initialiser les couleurs des arêtes à -1 (non colorié)
+    bool availableColors[MAX_ENEMIES];  // Couleurs disponibles
+
+    for (int i = 0; i < graph->numEdges; i++) {
+        memset(availableColors, true, sizeof(availableColors));
+
+        // Vérifier les arêtes adjacentes pour éviter les conflits de couleur
+        for (int j = 0; j < graph->numEdges; j++) {
+            if (i != j && (graph->edges[i].start == graph->edges[j].start ||
+                           graph->edges[i].start == graph->edges[j].end ||
+                           graph->edges[i].end == graph->edges[j].start ||
+                           graph->edges[i].end == graph->edges[j].end)) {
+                if (edgeColors[j] != -1) {
+                    availableColors[edgeColors[j]] = false;
+                }
+            }
+        }
+
+        // Assigner la première couleur disponible
+        for (int color = 0; color < MAX_ENEMIES; color++) {
+            if (availableColors[color]) {
+                edgeColors[i] = color;
+                break;
+            }
+        }
+
+        // Assigner le type d'ennemi à l'arête
+        graph->edges[i].weight = edgeColors[i];
+    }
 }
 
 void RenderMaze(Maze *maze) {
-    //int mazeWidthTotal = maze->width * CELL_SIZE;
-    //int mazeHeightTotal = maze->height * CELL_SIZE;
+    for (int i = 0; i < maze->graph.numEdges; i++) {
+        Edge edge = maze->graph.edges[i];
+        Node startNode = maze->graph.nodes[edge.start];
+        Node endNode = maze->graph.nodes[edge.end];
 
-    int startX = 70;//(GetScreenWidth() - mazeWidthTotal) /4;
-    int startY = 160;//(GetScreenHeight() - mazeHeightTotal) / 2;
+        DrawLine(startNode.x * 100, startNode.y * 100, endNode.x * 100, endNode.y * 100, BLACK);
 
-    for (int y = 0; y < maze->height; y++) {
-        for (int x = 0; x < maze->width; x++) {
-            int x1 = startX + x * CELL_SIZE;
-            int y1 = startY + y * CELL_SIZE;
-
-            if (maze->grid[y][x] & S)
-                DrawLine(x1, y1 + CELL_SIZE, x1 + CELL_SIZE, y1 + CELL_SIZE, BLACK);
-            if (maze->grid[y][x] & E)
-                DrawLine(x1 + CELL_SIZE, y1, x1 + CELL_SIZE, y1 + CELL_SIZE, BLACK);
-        }
+        const char *enemyTypes[] = { "T", "G", "L" }; // T for Troll, G for Gobelin, L for Lutin
+        const char *enemyType = enemyTypes[edge.weight % 3];
+        DrawText(enemyType, (startNode.x * 100 + endNode.x * 100) / 2, (startNode.y * 100 + endNode.y * 100) / 2, 20, RED);
     }
 }
+void PrintPath(int *predecessors, int startNode, int goalNode) {
+    // Paramètres inutilisés
+    (void)predecessors;
+    (void)startNode;
+    (void)goalNode;
+}
 
-void InitializeEnemies(Enemy enemies[], Maze *maze) {
+
+void GenerateMaze(Maze *maze, int complexity) {
+    // Paramètres inutilisés
+    (void)maze;
+    (void)complexity;
+}
+
+void MovePlayer(Player *player, int nextNode) {
+    player->currentNode = nextNode;
+}
+
+void InitializePlayer(Player *player, int startNode) {
+    player->currentNode = startNode;
+    player->health = 100; // Ex: initial health value
+}
+
+
+
+/*void InitializeEnemies(Enemy enemies[], Maze *maze) {
     int enemyCount = 0;
 
     for (int y = 0; y < maze->height && enemyCount < MAX_ENEMIES; y++) {
@@ -116,5 +147,5 @@ bool CheckCollisionPlayerEnemy(Rectangle player, Enemy enemy) {
                                                 enemy.radius, 
                                                 enemy.radius});
 }
-
+*/
 

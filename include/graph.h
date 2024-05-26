@@ -12,14 +12,18 @@
 // Définition des constantes
 #define MAX_NODES 100
 #define MAX_EDGES 200
-#define MAX_ENEMIES 100
+#define MAX_ENEMIES 10
+
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
-#define MAX_HEALTH 1000 // -> à redéfinir après l'implémentation de l'algo
+#define MAX_HEALTH 100 // -> à redéfinir après l'implémentation de l'algo
 
 #define TROLL 0
 #define LUTIN 1
-#define GARDE 2
+#define GOBLIN 2
+
+#define WIDTH 5
+#define HEIGHT 5
 
 
 
@@ -84,11 +88,7 @@ typedef struct character {
 // Structure pour représenter le labyrinthe
 typedef struct Maze {
     Graph graph;              // Graphe représentant le labyrinthe
-    Enemy enemies[MAX_ENEMIES]; // Liste des ennemis dans le labyrinthe
     int numEnemies;           // Nombre total d'ennemis dans le labyrinthe
-    int width, height;        // Dimensions du labyrinthe
-    int **grid;               // Grille de bits représentant les passages du labyrinthe
-    Player player;            // Le joueur
 } Maze;
 
 
@@ -103,13 +103,14 @@ void AddEdge(Graph *graph, int start, int end, int weight);
 // Fonctions pour gérer le joueur
 void InitializePlayer(Player *player, int startNode);
 void MovePlayer(Player *player, int nextNode);
-bool CheckCollisionPlayerEnemy(Rectangle player, Enemy enemy);
+//bool CheckCollisionPlayerEnemy(Rectangle player, Enemy enemy);
 
 // Fonctions pour gérer le labyrinthe
-void InitializeMaze(Maze *maze, int width, int height); // void InitializeMaze(Maze *maze);
-void GenerateMazeRecursiveBacktracker(Maze *maze); // void GenerateMaze(Maze *maze, int complexity);
+void InitializeMaze(Maze *maze); // void InitializeMaze(Maze *maze);
+void InitializeMazeLevel1(Maze *maze);
 void RenderMaze(Maze *maze);
-void CarvePassagesFrom(int cx, int cy, Maze *maze);
+void GenerateMaze(Maze *maze, int complexity);
+void PrintPath(int *predecessors, int startNode, int goalNode);
 void FreeMaze(Maze *maze); // Ajout de cette déclaration
 
 

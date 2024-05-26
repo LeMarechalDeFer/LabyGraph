@@ -12,6 +12,9 @@
 #define MAX_EDGES 200
 #define MAX_ENEMIES 10
 
+#define WIDTH 5
+#define HEIGHT 5
+
 typedef struct {
     int id;
     int x;
@@ -97,26 +100,23 @@ void InitializeMaze(Maze *maze) {
 void InitializeMazeLevel1(Maze *maze) {
     InitializeMaze(maze);
 
-    // Exemple simple de génération d'un labyrinthe 5x5
-    int width = 5;
-    int height = 5;
 
     // Ajouter des noeuds
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
+    for (int y = 0; y < HEIGHT; y++) {
+        for (int x = 0; x < WIDTH; x++) {
             AddNode(&maze->graph, x, y);
         }
     }
 
     // Ajouter des arêtes avec poids (nombre d'ennemis)
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-            int currentNode = y * width + x;
-            if (x < width - 1) { // Ajouter une arête vers la droite
+    for (int y = 0; y < HEIGHT; y++) {
+        for (int x = 0; x < WIDTH; x++) {
+            int currentNode = y * WIDTH + x;
+            if (x < WIDTH - 1) { // Ajouter une arête vers la droite
                 AddEdge(&maze->graph, currentNode, currentNode + 1, rand() % 3);
             }
-            if (y < height - 1) { // Ajouter une arête vers le bas
-                AddEdge(&maze->graph, currentNode, currentNode + width, rand() % 3);
+            if (y < HEIGHT - 1) { // Ajouter une arête vers le bas
+                AddEdge(&maze->graph, currentNode, currentNode + WIDTH, rand() % 3);
             }
         }
     }
@@ -202,17 +202,17 @@ int main() {
     // Boucle de jeu principale
     while (!WindowShouldClose()) {
         // Déplacement du joueur (exemple de mouvement avec les touches fléchées)
-        if (IsKeyPressed(KEY_RIGHT)) {
+         if (IsKeyPressed(KEY_RIGHT) && player.currentNode %  WIDTH < WIDTH - 1) {
             MovePlayer(&player, player.currentNode + 1);
         }
-        if (IsKeyPressed(KEY_LEFT)) {
+        if (IsKeyPressed(KEY_LEFT) && player.currentNode % WIDTH > 0) {
             MovePlayer(&player, player.currentNode - 1);
         }
-        if (IsKeyPressed(KEY_DOWN)) {
-            MovePlayer(&player, player.currentNode + 5);
+        if (IsKeyPressed(KEY_DOWN) && player.currentNode / WIDTH < HEIGHT - 1) {
+            MovePlayer(&player, player.currentNode + WIDTH);
         }
-        if (IsKeyPressed(KEY_UP)) {
-            MovePlayer(&player, player.currentNode - 5);
+        if (IsKeyPressed(KEY_UP) && player.currentNode / WIDTH > 0) {
+            MovePlayer(&player, player.currentNode - WIDTH);
         }
 
         BeginDrawing();

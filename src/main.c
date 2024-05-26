@@ -12,38 +12,25 @@ int main() {
 
     int screenWidth = 1200;
     int screenHeight = 800;
-    const float characterSpeed = 200.0f;
 
     InitWindow(screenWidth, screenHeight, "Menu du jeu éducatif");
         SetTraceLogLevel(LOG_ALL); // Activer les logs détaillés
 
     // Charger les images 
-    Image player = LoadImage("src/player.png");
+    Image player_Helper = LoadImage("src/player.png");
     Image ESIEA_logo = LoadImage("src/ESIEA-logo.png");
     Image dialogue_box = LoadImage("src/dialogue_box.png");
 
-    // Ennemies / Sommets du graph
-    Image garde = LoadImage("src/Garde.png");
-    Image lutin = LoadImage("src/Lutin.png");
-    Image troll = LoadImage("src/Troll.png");
     
-    Texture2D player_texture = LoadTextureFromImage(player);
+    Texture2D player_texture = LoadTextureFromImage(player_Helper);
     Texture2D ESIEA_logo_texture = LoadTextureFromImage(ESIEA_logo);
     Texture2D dialogue_box_texture = LoadTextureFromImage(dialogue_box);
 
-    Texture2D garde_texture = LoadTextureFromImage(garde);
-    Texture2D lutin_texture = LoadTextureFromImage(lutin);
-    Texture2D troll_texture = LoadTextureFromImage(troll);
-
     
-    Rectangle character = { 200, 300, 10, 10};
-    int playerHealth = MAX_HEALTH;
-    UnloadImage(player);
+    UnloadImage(player_Helper);
     UnloadImage(ESIEA_logo);
     UnloadImage(dialogue_box);
-    UnloadImage(garde);
-    UnloadImage(lutin);
-    UnloadImage(troll);
+
 
     // Charger les sons
     InitAudioDevice();
@@ -57,11 +44,14 @@ int main() {
     
     // Création et initialisation du labyrinthe
     Maze maze;
-    InitializeMaze(&maze, 10, 10);  // 10x10 est un exemple, ajustez selon vos besoins
-    GenerateMazeRecursiveBacktracker(&maze);
+    Player player;
+
+    InitializeMazeLevel1(&maze);
+
+    InitializePlayer(&player, 0);
    
-    Enemy enemies[MAX_ENEMIES];
-    InitializeEnemies(enemies,&maze);
+   // Enemy enemies[MAX_ENEMIES];
+    //InitializeEnemies(enemies,&maze);
 
     SetTargetFPS(60); // Définir le FPS pour une animation fluide
     
@@ -83,38 +73,22 @@ int main() {
     // Boucle principale du jeu
     while (!WindowShouldClose()) {    // Détecter la fermeture de la fenêtre
         double currentTime = GetTime();
-        float deltaTime = GetFrameTime();
 
         // Condition to make the circle stay in the maze
-        if (character.x > 535 - 1) {             // -> Right side of the maze coordinates : 535
-            character.x = 535 - 1;
-        }
-        if (character.x < 78) {
-            character.x = 78;                   // -> Left side of the maze coordinates : 78
-        }
-        if (character.y > 622 - 1) {            // -> Bottom side of the maze coordinates : 622
-            character.y = 622 - 1;
-        }
-        if (character.y < 167) {                // -> Top side of the maze coordinates : 167
-            character.y = 167;
-        }
 
-            if (IsKeyDown(KEY_RIGHT)) 
-                {
-                    character.x += characterSpeed * deltaTime;
-                }
-            if (IsKeyDown(KEY_LEFT))
-                {
-                    character.x -= characterSpeed * deltaTime;
-                }
-            if (IsKeyDown(KEY_UP)) 
-                {
-                    character.y -= characterSpeed * deltaTime;
-                }
-            if (IsKeyDown(KEY_DOWN)) 
-                {
-                    character.y += characterSpeed * deltaTime;
-                }
+        // Déplacement du joueur (exemple de mouvement avec les touches fléchées)
+        if (IsKeyPressed(KEY_RIGHT) && player.currentNode %  WIDTH < WIDTH - 1) {
+            MovePlayer(&player, player.currentNode + 1);
+        }
+        if (IsKeyPressed(KEY_LEFT) && player.currentNode % WIDTH > 0) {
+            MovePlayer(&player, player.currentNode - 1);
+        }
+        if (IsKeyPressed(KEY_DOWN) && player.currentNode / WIDTH < HEIGHT - 1) {
+            MovePlayer(&player, player.currentNode + WIDTH);
+        }
+        if (IsKeyPressed(KEY_UP) && player.currentNode / WIDTH > 0) {
+            MovePlayer(&player, player.currentNode - WIDTH);
+        }
         // Mise à jour des entrées
         if (currentScreen == TITLE && IsKeyPressed(KEY_ENTER) && currentTime - lastKeyPressTime > 0.5)
         {
@@ -161,8 +135,6 @@ int main() {
                 }
                 // Ici, vous devriez mettre le code pour afficher le premier niveau du jeu
                 DrawText("Niveau 1 ~ BELLMAN", 300, 0, 60, LIGHTGRAY);
-
-
                     // rectangle state player
                     Rectangle rec_player = { 585, 160, 420, 200 };  // Utilise la structure Rectangle pour déclarer
                     DrawRectangle(rec_player.x, rec_player.y, rec_player.width, rec_player.height, LIGHTGRAY);
@@ -196,7 +168,8 @@ int main() {
 
                     // player helper
                     DrawTexture(player_texture, 1000, 70, WHITE);
-                for (int i = 0; i < MAX_ENEMIES; i++) 
+              
+               /* for (int i = 0; i < MAX_ENEMIES; i++) 
                     {    
                         Vector2 enemyPos = { enemies[i].x * CELL_SIZE + CELL_SIZE / 2 + 70, enemies[i].y * CELL_SIZE + CELL_SIZE / 2 + 160 };
                         DrawText(TextFormat("%d", enemies[i].strength),enemyPos.x,enemyPos.y, enemies[i].radius, BLACK);
@@ -216,16 +189,16 @@ int main() {
                     {
                         enemies[i].strength = 0;
                     }
-                }
+                }*/
 
-                    // -> The player who parcours the maze
-                    Vector2 characterPos = {character.x, character.y};
-                    DrawCircleV(characterPos, 3, BLACK); 
+
+                Node currentNode = maze.graph.nodes[player.currentNode];
+                DrawCircle(currentNode.x * 100, currentNode.y * 100, 10, BLUE);
 
                     // Draw the player's health bar
-                    Vector2 HealthPos = { characterPos.x - 5, characterPos.y - 10 };
+                   /* Vector2 HealthPos = { characterPos.x - 5, characterPos.y - 10 };
                     DrawText(TextFormat("%d",playerHealth), HealthPos.x, HealthPos.y, 5, DARKGRAY); // Health bar of the character
-
+                    */
                     // Paramètres du rectangle arrondi (bulle)
                     Rectangle rect_bulle = { 930, 60, 100, 50 };
                     float roundness = 1.0;  // Niveau d'arrondi des coins, 0.0 à 1.0
@@ -283,9 +256,6 @@ int main() {
     }
 
     // De-initialisation
-    UnloadTexture(lutin_texture);
-    UnloadTexture(garde_texture);
-    UnloadTexture(troll_texture);
     UnloadTexture(ESIEA_logo_texture); // Ne pas oublier de décharger la texture pour libérer la ressource
     UnloadSound(son_start);  // Libère la mémoire utilisée par le son fxWav
     CloseAudioDevice();  // Ferme le dispositif audio
