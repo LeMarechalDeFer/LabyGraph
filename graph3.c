@@ -1,12 +1,9 @@
-//#include "./include/graph.h"
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
 #include <raylib.h>
 #include <time.h>
-
 
 #define MAX_NODES 100
 #define MAX_EDGES 200
@@ -21,10 +18,17 @@ typedef struct {
     int y;
 } Node;
 
+typedef enum {
+    L,
+    T,
+    G, 
+} EnemyType;
+
 typedef struct {
     int start;
     int end;
-    int weight; // Represents the type of enemy
+    int number_enemy; 
+    EnemyType enemy_type;
 } Edge;
 
 typedef struct {
@@ -41,24 +45,23 @@ typedef struct {
 
 typedef struct {
     Graph graph;
-    int numEnemies;
 } Maze;
+
+// Tableau de lettres associées aux types d'ennemis
+const char *enemyLetters[] = { "L", "T", "G" };
 
 // Function prototypes
 void InitializeGraph(Graph *graph);
 void AddNode(Graph *graph, int x, int y);
-void AddEdge(Graph *graph, int start, int end, int weight);
+void AddEdge(Graph *graph, int start, int end, EnemyType enemyType, int number_enemy);
 void InitializePlayer(Player *player, int startNode);
-void MovePlayer(Player *player, int nextNode);
+bool MovePlayer(Player *player, Maze *maze, int nextNode);
 void InitializeMaze(Maze *maze);
 void InitializeMazeLevel1(Maze *maze);
-void ColorEdges(Graph *graph);
 void RenderMaze(Maze *maze);
+void DrawHealthBar(Player *player);
 void PrintPath(int *predecessors, int startNode, int goalNode);
 void GenerateMaze(Maze *maze, int complexity);
-
-
-
 
 void InitializeGraph(Graph *graph) {
     graph->numNodes = 0;
@@ -74,27 +77,37 @@ void AddNode(Graph *graph, int x, int y) {
     }
 }
 
-void AddEdge(Graph *graph, int start, int end, int weight) {
+void AddEdge(Graph *graph, int start, int end, EnemyType enemyType, int number_enemy) {
     if (graph->numEdges < MAX_EDGES) {
         graph->edges[graph->numEdges].start = start;
         graph->edges[graph->numEdges].end = end;
-        graph->edges[graph->numEdges].weight = weight;
+        graph->edges[graph->numEdges].enemy_type = enemyType;
+        graph->edges[graph->numEdges].number_enemy = number_enemy;
         graph->numEdges++;
     }
 }
 
 void InitializePlayer(Player *player, int startNode) {
     player->currentNode = startNode;
-    player->health = 100; // Ex: initial health value
+    player->health = 0; // La santé commence à 0
 }
 
-void MovePlayer(Player *player, int nextNode) {
-    player->currentNode = nextNode;
+bool MovePlayer(Player *player, Maze *maze, int nextNode) {
+    // Trouver l'arête entre le nœud actuel et le prochain nœud
+    for (int i = 0; i < maze->graph.numEdges; i++) {
+        Edge edge = maze->graph.edges[i];
+        if ((edge.start == player->currentNode && edge.end == nextNode) ||
+            (edge.end == player->currentNode && edge.start == nextNode)) {
+            player->health += edge.number_enemy; // Ajouter le nombre d'ennemis à la santé du joueur
+            player->currentNode = nextNode;
+            return true;
+        }
+    }
+    return false; // Déplacement invalide
 }
 
 void InitializeMaze(Maze *maze) {
     InitializeGraph(&maze->graph);
-    maze->numEnemies = 0;
 }
 
 void InitializeMazeLevel1(Maze *maze) {
@@ -109,14 +122,14 @@ void InitializeMazeLevel1(Maze *maze) {
     }
 
     // Ajouter des arêtes avec poids (nombre d'ennemis)
-    for (int y = 0; y < HEIGHT; y++) {
-        for (int x = 0; x < WIDTH; x++) {
-            int currentNode = y * WIDTH + x;
-            if (x < WIDTH - 1) { // Ajouter une arête vers la droite
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            int currentNode = y * width + x;
+            if (x < width - 1) { // Ajouter une arête vers la droite
                 AddEdge(&maze->graph, currentNode, currentNode + 1, rand() % 3);
             }
-            if (y < HEIGHT - 1) { // Ajouter une arête vers le bas
-                AddEdge(&maze->graph, currentNode, currentNode + WIDTH, rand() % 3);
+            if (y < height - 1) { // Ajouter une arête vers le bas
+                AddEdge(&maze->graph, currentNode, currentNode + width, rand() % 3);
             }
         }
     }
@@ -151,9 +164,6 @@ void ColorEdges(Graph *graph) {
                 break;
             }
         }
-
-        // Assigner le type d'ennemi à l'arête
-        graph->edges[i].weight = edgeColors[i];
     }
 }
 
@@ -165,10 +175,20 @@ void RenderMaze(Maze *maze) {
 
         DrawLine(startNode.x * 100, startNode.y * 100, endNode.x * 100, endNode.y * 100, BLACK);
 
-        const char *enemyTypes[] = { "T", "G", "L" }; // T for Troll, G for Gobelin, L for Lutin
-        const char *enemyType = enemyTypes[edge.weight % 3];
-        DrawText(enemyType, (startNode.x * 100 + endNode.x * 100) / 2, (startNode.y * 100 + endNode.y * 100) / 2, 20, RED);
+        char enemyLabel[10];
+        snprintf(enemyLabel, sizeof(enemyLabel), "%s %d", enemyLetters[edge.enemy_type], edge.number_enemy);
+        DrawText(enemyLabel, (startNode.x * 100 + endNode.x * 100) / 2, (startNode.y * 100 + endNode.y * 100) / 2, 20, RED);
     }
+}
+
+void DrawHealthBar(Player *player) {
+    int barWidth = 200;
+    int barHeight = 20;
+    int x = 10;
+    int y = 10;
+    DrawRectangle(x, y, barWidth, barHeight, GRAY); // Fond de la barre de santé
+    DrawRectangle(x, y, barWidth * (player->health / 100.0), barHeight, RED); // Barre de santé
+    DrawRectangleLines(x, y, barWidth, barHeight, BLACK); // Bordure de la barre de santé
 }
 
 void PrintPath(int *predecessors, int startNode, int goalNode) {
@@ -186,6 +206,9 @@ void GenerateMaze(Maze *maze, int complexity) {
 }
 
 int main() {
+    // Initialisation du générateur de nombres aléatoires
+    srand(time(NULL));
+
     // Initialisation de la fenêtre Raylib
     InitWindow(800, 600, "Maze Game");
 
@@ -202,17 +225,17 @@ int main() {
     // Boucle de jeu principale
     while (!WindowShouldClose()) {
         // Déplacement du joueur (exemple de mouvement avec les touches fléchées)
-         if (IsKeyPressed(KEY_RIGHT) && player.currentNode %  WIDTH < WIDTH - 1) {
+        if (IsKeyPressed(KEY_RIGHT)) {
             MovePlayer(&player, player.currentNode + 1);
         }
-        if (IsKeyPressed(KEY_LEFT) && player.currentNode % WIDTH > 0) {
+        if (IsKeyPressed(KEY_LEFT)) {
             MovePlayer(&player, player.currentNode - 1);
         }
-        if (IsKeyPressed(KEY_DOWN) && player.currentNode / WIDTH < HEIGHT - 1) {
-            MovePlayer(&player, player.currentNode + WIDTH);
+        if (IsKeyPressed(KEY_DOWN)) {
+            MovePlayer(&player, player.currentNode + 5);
         }
-        if (IsKeyPressed(KEY_UP) && player.currentNode / WIDTH > 0) {
-            MovePlayer(&player, player.currentNode - WIDTH);
+        if (IsKeyPressed(KEY_UP)) {
+            MovePlayer(&player, player.currentNode - 5);
         }
 
         BeginDrawing();
@@ -220,6 +243,9 @@ int main() {
 
         // Rendu du labyrinthe
         RenderMaze(&maze);
+
+        // Rendu de la barre de santé
+        DrawHealthBar(&player);
 
         // Rendu du joueur
         Node currentNode = maze.graph.nodes[player.currentNode];
