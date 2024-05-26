@@ -90,18 +90,30 @@ void RenderMaze(Maze *maze) {
     }
 }
 
-void InitializeEnemies(Enemy enemies[],Maze *maze) {
+void InitializeEnemies(Enemy enemies[], Maze *maze) {
     int enemyCount = 0;
-    for (int y = 0; y < maze->width && enemyCount < MAX_ENEMIES; y++) {
+
+    for (int y = 0; y < maze->height && enemyCount < MAX_ENEMIES; y++) {
         for (int x = 0; x < maze->width && enemyCount < MAX_ENEMIES; x++) {
-            if (maze->grid[y][x] == 0 && maze->grid[y][x+1] != 0 && maze ->grid[y+1][x] &&(x != 1 || y != 1)) 
-            { // Avoid placing enemy at player start
+            // Check if the current cell is not a wall and has at least one open path
+            if (maze->grid[y][x] != 0 && ((maze->grid[y][x] & S) || (maze->grid[y][x] & E) || 
+                                          (maze->grid[y][x] & N) || (maze->grid[y][x] & W))) {
                 enemies[enemyCount].x = x;
                 enemies[enemyCount].y = y;
+                enemies[enemyCount].radius = CELL_SIZE / 4; // Set the radius for enemies
+                enemies[enemyCount].strength = GetRandomValue(1,50);
                 enemyCount++;
             }
         }
     }
+}
+bool CheckCollisionPlayerEnemy(Rectangle player, Enemy enemy) {
+    return CheckCollisionCircleRec((Vector2){player.x + player.width / 2, player.y + player.height / 2}, 
+                                    player.width / 2, 
+                                    (Rectangle){enemy.x * CELL_SIZE + CELL_SIZE / 2 + 70, 
+                                                enemy.y * CELL_SIZE + CELL_SIZE / 2 + 160, 
+                                                enemy.radius, 
+                                                enemy.radius});
 }
 
 

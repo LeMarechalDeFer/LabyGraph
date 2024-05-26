@@ -3,6 +3,7 @@
 // #include "gamestate.h"
 //  cc game.c -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
   
+#define CELL_SIZE 40  
 
 
 
@@ -34,8 +35,9 @@ int main() {
     Texture2D lutin_texture = LoadTextureFromImage(lutin);
     Texture2D troll_texture = LoadTextureFromImage(troll);
 
+    
     Rectangle character = { 200, 300, 50, 50};
-
+    int playerHealth = MAX_HEALTH;
     UnloadImage(player);
     UnloadImage(ESIEA_logo);
     UnloadImage(dialogue_box);
@@ -194,13 +196,27 @@ int main() {
 
                     // player helper
                     DrawTexture(player_texture, 1000, 70, WHITE);
+                for (int i = 0; i < MAX_ENEMIES; i++) 
+                    {    
+                        Vector2 enemyPos = { enemies[i].x * CELL_SIZE + CELL_SIZE / 2 + 70, enemies[i].y * CELL_SIZE + CELL_SIZE / 2 + 160 };
+                        DrawText(TextFormat("%d", enemies[i].strength),enemyPos.x,enemyPos.y, enemies[i].radius, BLACK);
+                    }
 
-                /* for (int i = 0; i < MAX_ENEMIES; i++) 
+                for (int i = 0; i < MAX_ENEMIES; i++) 
+                {
+                    if (CheckCollisionPlayerEnemy(character, enemies[i])) 
                     {
-                        int randomised_power = GetRandomValue(1,20);
-                        Vector2 enemyPos = { enemies[i].x , enemies[i].y };
-                        DrawText(TextFormat("%d", randomised_power), enemyPos.x,enemyPos.y, 5,BLACK);
-                    }*/
+                        playerHealth -= enemies[i].strength; // Decrease player's health based on enemy's power
+                        if (playerHealth <= 0) 
+                        {
+                            currentScreen = ENDING; // Game over condition, handle as needed
+                        }
+                    }
+                    if (CheckCollisionPlayerEnemy(character, enemies[i]))
+                    {
+                        enemies[i].strength = 0;
+                    }
+                }
 
                     // -> The player who parcours the maze
                     Vector2 characterPos = {character.x, character.y};
@@ -208,7 +224,7 @@ int main() {
 
                     // Draw the player's health bar
                     Vector2 HealthPos = { characterPos.x - 5, characterPos.y - 10 };
-                    DrawText(TextFormat("%d",MAX_HEALTH), HealthPos.x, HealthPos.y, 5, DARKGRAY); // Health bar of the character
+                    DrawText(TextFormat("%d",playerHealth), HealthPos.x, HealthPos.y, 5, DARKGRAY); // Health bar of the character
 
                     // Paramètres du rectangle arrondi (bulle)
                     Rectangle rect_bulle = { 930, 60, 100, 50 };

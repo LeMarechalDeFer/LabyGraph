@@ -12,10 +12,10 @@
 // Définition des constantes
 #define MAX_NODES 100
 #define MAX_EDGES 200
-#define MAX_ENEMIES 20
+#define MAX_ENEMIES 100
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
-#define MAX_HEALTH 100 // -> à redéfinir après l'implémentation de l'algo
+#define MAX_HEALTH 1000 // -> à redéfinir après l'implémentation de l'algo
 
 #define TROLL 0
 #define LUTIN 1
@@ -30,6 +30,7 @@ typedef enum GameScreen
         LOGO = 0, TITLE,LEVEL1, GAMEPLAY, EXPLANATION ,ENDING
     }GameScreen;
     
+
 
 // Directions
 #define N 1
