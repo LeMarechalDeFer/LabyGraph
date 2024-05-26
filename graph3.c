@@ -52,10 +52,11 @@ void InitializeGraph(Graph *graph);
 void AddNode(Graph *graph, int x, int y);
 void AddEdge(Graph *graph, int start, int end, EnemyType enemyType, int number_enemy);
 void InitializePlayer(Player *player, int startNode);
-void MovePlayer(Player *player, int nextNode);
+bool MovePlayer(Player *player, Maze *maze, int nextNode);
 void InitializeMaze(Maze *maze);
 void InitializeMazeLevel1(Maze *maze);
 void RenderMaze(Maze *maze);
+void DrawHealthBar(Player *player);
 void PrintPath(int *predecessors, int startNode, int goalNode);
 void GenerateMaze(Maze *maze, int complexity);
 
@@ -85,11 +86,21 @@ void AddEdge(Graph *graph, int start, int end, EnemyType enemyType, int number_e
 
 void InitializePlayer(Player *player, int startNode) {
     player->currentNode = startNode;
-    player->health = 100; // Ex: initial health value
+    player->health = 0; // La santé commence à 0
 }
 
-void MovePlayer(Player *player, int nextNode) {
-    player->currentNode = nextNode;
+bool MovePlayer(Player *player, Maze *maze, int nextNode) {
+    // Trouver l'arête entre le nœud actuel et le prochain nœud
+    for (int i = 0; i < maze->graph.numEdges; i++) {
+        Edge edge = maze->graph.edges[i];
+        if ((edge.start == player->currentNode && edge.end == nextNode) ||
+            (edge.end == player->currentNode && edge.start == nextNode)) {
+            player->health += edge.number_enemy; // Ajouter le nombre d'ennemis à la santé du joueur
+            player->currentNode = nextNode;
+            return true;
+        }
+    }
+    return false; // Déplacement invalide
 }
 
 void InitializeMaze(Maze *maze) {
@@ -138,6 +149,16 @@ void RenderMaze(Maze *maze) {
     }
 }
 
+void DrawHealthBar(Player *player) {
+    int barWidth = 200;
+    int barHeight = 20;
+    int x = 10;
+    int y = 10;
+    DrawRectangle(x, y, barWidth, barHeight, GRAY); // Fond de la barre de santé
+    DrawRectangle(x, y, barWidth * (player->health / 100.0), barHeight, RED); // Barre de santé
+    DrawRectangleLines(x, y, barWidth, barHeight, BLACK); // Bordure de la barre de santé
+}
+
 void PrintPath(int *predecessors, int startNode, int goalNode) {
     // Paramètres inutilisés
     (void)predecessors;
@@ -155,7 +176,7 @@ void GenerateMaze(Maze *maze, int complexity) {
 int main() {
     // Initialisation du générateur de nombres aléatoires
     srand(time(NULL));
-    
+
     // Initialisation de la fenêtre Raylib
     InitWindow(800, 600, "Maze Game");
 
@@ -173,16 +194,16 @@ int main() {
     while (!WindowShouldClose()) {
         // Déplacement du joueur (exemple de mouvement avec les touches fléchées)
         if (IsKeyPressed(KEY_RIGHT)) {
-            MovePlayer(&player, player.currentNode + 1);
+            MovePlayer(&player, &maze, player.currentNode + 1);
         }
         if (IsKeyPressed(KEY_LEFT)) {
-            MovePlayer(&player, player.currentNode - 1);
+            MovePlayer(&player, &maze, player.currentNode - 1);
         }
         if (IsKeyPressed(KEY_DOWN)) {
-            MovePlayer(&player, player.currentNode + 5);
+            MovePlayer(&player, &maze, player.currentNode + 5);
         }
         if (IsKeyPressed(KEY_UP)) {
-            MovePlayer(&player, player.currentNode - 5);
+            MovePlayer(&player, &maze, player.currentNode - 5);
         }
 
         BeginDrawing();
@@ -190,6 +211,9 @@ int main() {
 
         // Rendu du labyrinthe
         RenderMaze(&maze);
+
+        // Rendu de la barre de santé
+        DrawHealthBar(&player);
 
         // Rendu du joueur
         Node currentNode = maze.graph.nodes[player.currentNode];
