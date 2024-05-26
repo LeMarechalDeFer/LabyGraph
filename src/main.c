@@ -111,7 +111,7 @@ int main() {
                 PlaySound(son_start);
                 if (IsKeyPressed(KEY_K))
                 {
-                     UnloadSound(son_start);  // Libère la mémoire utilisée par le son 
+                    UnloadSound(son_start);  // Libère la mémoire utilisée par le son 
                 }
                 DrawText("Appuyez sur 'ENTRER' pour commencer", 200, screenHeight/2 -100, 45, LIGHTGRAY);
                 DrawTexture(player_texture, screenWidth/2-50, screenHeight/2 , WHITE);
