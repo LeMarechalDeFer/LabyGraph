@@ -14,32 +14,35 @@ int main() {
     int screenHeight = 800;
 
     int rectX = 70;
-    int rectY = 160;                 // -> Player start points
-    int rectWidth = 470;
-    int rectHeight = 470;
+    int rectY = 160; 
+    int rectWidth = 500;                // -> Player start points
+    int rectHeight = 500;               // -> Player start points
 
+    int LVL = 0;
+    int LVL_actuelle =0;
+    int counthelper =0;
     // Calculate the scaling factors
     float scaleX = (float)rectWidth / (WIDTH - 1);
     float scaleY = (float)rectHeight / (HEIGHT - 1);
 
     InitWindow(screenWidth, screenHeight, "Menu du jeu éducatif");
-        SetTraceLogLevel(LOG_ALL); // Activer les logs détaillés
+    SetTraceLogLevel(LOG_ALL); // Activer les logs détaillés
 
     // Charger les images 
     Image player_Helper = LoadImage("src/player.png");
     Image ESIEA_logo = LoadImage("src/ESIEA-logo.png");
     Image dialogue_box = LoadImage("src/dialogue_box.png");
-
+    Image touches_direction =LoadImage("src/touches_direction.png");
     
     Texture2D player_texture = LoadTextureFromImage(player_Helper);
     Texture2D ESIEA_logo_texture = LoadTextureFromImage(ESIEA_logo);
     Texture2D dialogue_box_texture = LoadTextureFromImage(dialogue_box);
-
+    Texture2D touches_direction_texture = LoadTextureFromImage(touches_direction);
     
     UnloadImage(player_Helper);
     UnloadImage(ESIEA_logo);
     UnloadImage(dialogue_box);
-
+    UnloadImage(touches_direction);
 
     // Charger les sons
     InitAudioDevice();
@@ -53,9 +56,13 @@ int main() {
     // Création et initialisation du labyrinthe
     Maze maze;
     Player player;
-    ;
 
-    InitializeMazeLevel1(&maze);
+    int mazeWidth = 50;  // Largeur du labyrinthe en nombre de cellules
+    int mazeHeight = 50; // Hauteur du labyrinthe en nombre de cellules
+
+
+    InitializeMaze(&maze, WIDTH, HEIGHT);
+    GenerateMaze(&maze);
 
     InitializePlayer(&player, 0);
    
@@ -72,9 +79,18 @@ int main() {
         "Es-tu prêt ?",
         "Parfait !! Dans ce cas, bienvenue au premier étage.\nDans chaque étage, tu auras des défis à réaliser\n afin de pouvoir continuer ton ascension. ",
     };
+    char *consignes[] = 
+    {
+        "Vous devez trouver le moyen d'affronter le moins\n d'énenmies possible en suivant\n l'algo de Bellman.",
+        "Vous devez trouver le moyen d'affronter le plus\n d'énenmies possible en suivant\n l'algo de Bellman.",
+        "la suite des consigne...",
+    };
 
     int maxLines = sizeof(monologue) / sizeof(monologue[0]);
+    int maxLinesconsigne = sizeof(consignes) / sizeof(consignes[0]);
+
     int currentLine = 0;
+    int currentLineLVL = 0;
     // Définir les états de jeu
     GameScreen currentScreen = TITLE;
     double lastKeyPressTime = 0;  // Temps de la dernière pression de touche
@@ -82,39 +98,36 @@ int main() {
     // Boucle principale du jeu
     while (!WindowShouldClose()) {    // Détecter la fermeture de la fenêtre
         double currentTime = GetTime();
-
         // Condition to make the circle stay in the maze
-
         // Déplacement du joueur (exemple de mouvement avec les touches fléchées)
         if (IsKeyPressed(KEY_RIGHT)) {
-            MovePlayer(&player, &maze,player.currentNode + 1);
+            MovePlayer(&player, &maze, player.currentNode + 1);
         }
         if (IsKeyPressed(KEY_LEFT)) {
-            MovePlayer(&player, &maze,player.currentNode - 1);
+            MovePlayer(&player, &maze, player.currentNode - 1);
         }
         if (IsKeyPressed(KEY_DOWN)) {
-            MovePlayer(&player,&maze ,player.currentNode + 5);
+            MovePlayer(&player, &maze, player.currentNode + maze.width);
         }
         if (IsKeyPressed(KEY_UP)) {
-            MovePlayer(&player, &maze,player.currentNode - 5);
+            MovePlayer(&player, &maze, player.currentNode - maze.width);
         }
-
         // Mise à jour des entrées
         if (currentScreen == TITLE && IsKeyPressed(KEY_ENTER) && currentTime - lastKeyPressTime > 0.5)
         {
             currentScreen = GAMEPLAY; // Commence le jeu    
             lastKeyPressTime = currentTime;  // Mettre à jour le temps de la dernière action
         }
-
-        if (currentScreen == GAMEPLAY && IsKeyPressed(KEY_ENTER)&& currentTime - lastKeyPressTime > 0.5)
+        if (currentScreen == ENDING && IsKeyPressed(KEY_ENTER) && currentTime - lastKeyPressTime > 0.5)
         {
-            currentScreen = EXPLANATION;
-            lastKeyPressTime = currentTime;
+            
+            currentScreen = WINROOM; // Commence le jeu    
+            lastKeyPressTime = currentTime;  // Mettre à jour le temps de la dernière action
         }
         // Commence à dessiner
         BeginDrawing();
 
-        ClearBackground(RAYWHITE);
+        ClearBackground(WHITE);
 
         switch (currentScreen) {
             case TITLE: 
@@ -145,18 +158,33 @@ int main() {
                 }
                 // Ici, vous devriez mettre le code pour afficher le premier niveau du jeu
                 DrawText("Niveau 1 ~ BELLMAN", 300, 0, 60, LIGHTGRAY);
-                    // rectangle state player
+                    
+                    // rectangle stat player
+
                     Rectangle rec_player = { 585, 160, 420, 200 };  // Utilise la structure Rectangle pour déclarer
                     DrawRectangle(rec_player.x, rec_player.y, rec_player.width, rec_player.height, LIGHTGRAY);
                     int borderplayer = 5; // Épaisseur de la bordure
                     DrawRectangleLinesEx(rec_player,borderplayer , BLACK);
 
-                    // rectangle state mob
+                    DrawText("Statistique Player:",595,170,20,BLACK); //mettre la barre de vie 
+                    int Player_health =12 ; //a changer !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    // Afficher la vie du personnage
+                    DrawText(TextFormat("Health: %d/100", Player_health), 595, 230, 30, RED);
+
+                    // rectangle stat mob
                     Rectangle rec_mob = { 585, 400, 420, 220 };  
                     DrawRectangle(rec_mob.x, rec_mob.y, rec_mob.width, rec_mob.height, LIGHTGRAY);
                     int bordermob = 5; 
-
                     DrawRectangleLinesEx(rec_mob, bordermob, BLACK);
+
+
+                    DrawText("Statistique Mobs:",595,410,20,BLACK);
+                   
+                    DrawText("'L' pour LUTIN = 10",595,440,20,GREEN);
+                    DrawText("'G' pour GARDE = 20",595,470,20,BLUE);
+                    DrawText("'T' pour TROLL = 30",595,510,20,RED);
+                    DrawText("'M' pour MONSTRE = 30",595,530,20,RED);
+
 
                     // rectangle indication deplacement
                     Rectangle rec_indication = { 20, 650, 565, 140 }; 
@@ -164,11 +192,34 @@ int main() {
                     int borderdeplacement = 5; 
                     DrawRectangleLinesEx(rec_indication, borderdeplacement, BLACK);
 
+                    Rectangle sourcetouches = { 0, 0, (float)touches_direction.width, (float)touches_direction.height };
+                    Rectangle desttouches = { 300, 650, 175, 110 };
+                    Vector2 origintouches = { 0, 0 };
+                    
+                    DrawText("Déplacement:",35,660,20,BLACK);
+                    DrawTexturePro(touches_direction_texture, sourcetouches, desttouches, origintouches, 0, WHITE);
+                    DrawText("Utiliser les touches directionnelle \npour vous déplacer",35,700,17,BLACK);
+                    //DrawTexture(touches_direction_texture,23,600, WHITE);
+
                     // rectangle consigne 
                     Rectangle rec_consigne = { 585, 650, 450, 140 }; 
                     DrawRectangle(rec_consigne.x, rec_consigne.y, rec_consigne.width, rec_consigne.height, LIGHTGRAY);
                     int borderconsigne = 5; 
-                    DrawRectangleLinesEx(rec_consigne, borderconsigne, RED);    
+                    DrawRectangleLinesEx(rec_consigne, borderconsigne, RED); 
+
+                    DrawText("Consignes du LvL:",600,660,20,BLACK);
+
+                    if (LVL < LVL_actuelle) { // changer la condition pour quelle change le texte quand on change de lvl
+                        if (currentLineLVL < maxLinesconsigne - 1) {
+                            currentLine++;
+                            LVL_actuelle++;
+                        }   
+                    }  
+                    if (currentLineLVL < maxLinesconsigne) {
+                        DrawText(consignes[currentLineLVL], 600, 700, 15, BLACK);
+                            
+                    }
+                
 
                     // rectangle graph 
                     Rectangle rec_graph = { 70, 160, 470, 470 }; 
@@ -189,24 +240,65 @@ int main() {
                     DrawRectangleRoundedLinesEx(rect_bulle,roundness,segments,borderbulle,BLACK);
 
                     //texte dans bulle
-                    DrawText("  Aide ?",935,76,20,BLACK);
+                    DrawText("Aide 'H'?",935,76,20,BLACK);
+
+                     // rectangle explication helper  
+
+                    if (IsKeyPressed(KEY_H)) {
+                    {
+                        counthelper++;
+                    }
+                    }
+                    if(counthelper %2==0)
+                    {
+                        Rectangle rec_explication_helper = { 520, 100, 590, 700 }; 
+                        DrawRectangle(rec_explication_helper.x, rec_explication_helper.y, rec_explication_helper.width, rec_explication_helper.height, GRAY);
+                        int border_explication_helper = 5; 
+                        DrawRectangleLinesEx(rec_explication_helper, border_explication_helper, BLACK);
+                        
+                        Rectangle rec_explication_bellman = { 530, 110, 570, 290 }; 
+                        DrawRectangle(rec_explication_bellman.x, rec_explication_bellman.y, rec_explication_bellman.width, rec_explication_bellman.height, LIGHTGRAY);
+                        int border_explication_bellman = 5; 
+                        DrawRectangleLinesEx(rec_explication_bellman, border_explication_bellman, BLACK);
+                        
+                        DrawText("Étape 1: Initialisation\nInitialiser les distances :Pour chaque sommet v du graphe, initialisez la distance d[v]\n à l'infini .\n La distance du sommet de départ s à lui-même est définie à 0 (d[s] = 0)\n.Initialisez le prédécesseur de chaque sommet pred[v] à null.\n\nÉtape 2: Relaxation\nRelaxation des arêtes :\nRépétez les étapes suivantes |V| - 1 fois, où |V| est le nombre de sommets dans\n le graphe.\nPour chaque arête (u, v) avec un poids w(u, v) :\nSi d[u] + w(u, v) < d[v], mettez à jour d[v] et pred[v].\nd[v] = d[u] + w(u, v)\npred[v] = u\n\nÉtape 3: Détection des Cycles Négatifs\nVérification des cycles négatifs :\nPour chaque arête (u, v) :\nSi d[u] + w(u, v) < d[v], alors le graphe contient un cycle de poids négatif.\n Signalez une erreur.",545,110,12,BLACK);
+
+                        Rectangle rec_explication_bellman_code = { 530, 410, 300, 380 }; 
+                        DrawRectangle(rec_explication_bellman_code.x, rec_explication_bellman_code.y, rec_explication_bellman_code.width, rec_explication_bellman_code.height, LIGHTGRAY);
+                        int border_explication_bellman_code = 5; 
+                        DrawRectangleLinesEx(rec_explication_bellman_code, border_explication_bellman_code, BLACK);
+
+                        DrawText("fonction BellmanFord(G, w, s)\n// Initialisation\nfor each vertex v in G\n    d[v] = INT_MAX;\n   pred[v] = null\nd[s] = 0\n\n// Relaxation\nfor i = 1 to |V| - 1\n   for each edge (u, v) in G\n     if d[u] + w(u, v) < d[v] then\n         d[v] = d[u] + w(u, v)\n         pred[v] = u\n\n// Détection des cycles négatifs\nfor each edge (u, v) in G\n    if d[u] + w(u, v) < d[v] then\n         error 'G contains a negative\n         -weight cycle'\nreturn d, pred",540,420,15,BLACK);
+
+
+                        /*Rectangle rec_explication_bellman_exemple = { 830, 410, 250, 380 }; 
+                        DrawRectangle(rec_explication_bellman_exemple.x, rec_explication_bellman_exemple.y, rec_explication_bellman_exemple.width, rec_explication_bellman_exemple.height, LIGHTGRAY);
+                        int border_explication_bellman_exemple = 5; 
+                        DrawRectangleLinesEx(rec_explication_bellman_exemple, border_explication_bellman_exemple, BLACK);
+                        */
+
+                        DrawText("Cliquer sur 'H' pour\n fermer :)",840,470, 20,BLACK);
+
+
+                    }
+
 
                  // Fonction pour dessiner le labyrinthe
-                    RenderMaze(&maze);
+                RenderMaze(&maze, rectX, rectY, rectWidth, rectHeight);
                     
                 Node currentNode = maze.graph.nodes[player.currentNode];
                 int playerX = rectX + currentNode.x * scaleX;
                 int playerY = rectY + currentNode.y * scaleY;
-                DrawCircle(playerX, playerY, 10, BLUE);
+                DrawCircle(playerX * CELL_SIZE + CELL_SIZE / 2, playerY * CELL_SIZE + CELL_SIZE / 2, 10, BLUE);
                 // Entrée du Maze
                 DrawText("E",65,150,30,RED); // coordonnées de l'entrée
                 // Sortie du Maze
                 DrawText("S",525,610,30,RED); // coordonnées de la sortie
 
-                if(player.currentNode == edge.end)
+             /*   if(player.currentNode == edge.end)
                 {
                     currentScreen = ENDING;
-                }
+                }*/
                 // Rendu de la barre de santé
                 DrawHealthBar(&player);
                 
@@ -225,7 +317,7 @@ int main() {
                     if (currentLine < maxLines - 1) {
                         currentLine++;
                     }   
-                }  
+                }
 
                 if (currentLine == maxLines - 1) {
                     displayText0 = !displayText0;
@@ -241,11 +333,22 @@ int main() {
                     }
                 }
                 break;
-            case ENDING:
-                DrawText(TextFormat("Your score is : %d",player.health), 350, 200, 20, LIGHTGRAY);
+              case ENDING:
+                DrawText("Vous avez echoué ", 175, 200, 100, LIGHTGRAY);
+                DrawText("Appuier sur ENTRER pour continuer", 200, 300, 18, BLACK);  
+                DrawTexture(player_texture, screenWidth/2-50, screenHeight/2 , WHITE);
+                break;
+            
+            case WINROOM:
+                 ClearBackground(BLUE);
+                DrawText("Vous avez Réussi !", 175, 200, 100, LIGHTGRAY);
+                DrawText("Appuier sur ENTRER pour continuer", 300, 300, 18, BLACK);  
+                DrawTexture(player_texture, screenWidth/2-50, screenHeight/2 , WHITE);
                 break;
             default:
                 break;
+
+            
         }
 
         EndDrawing();

@@ -7,6 +7,7 @@
 #include <string.h>
 #include <raylib.h>
 #include <time.h>
+#include <math.h>
 
 
 // Définition des constantes
@@ -24,6 +25,7 @@
 
 #define WIDTH 5
 #define HEIGHT 5
+#define CELL_SIZE 40
 
 
 
@@ -31,7 +33,7 @@
 
 typedef enum GameScreen 
     { 
-        LOGO = 0, TITLE,LEVEL1, GAMEPLAY, EXPLANATION ,ENDING
+        LOGO = 0, TITLE,LEVEL1, GAMEPLAY, EXPLANATION ,ENDING,WINROOM,
     }GameScreen;
     
 
@@ -91,9 +93,11 @@ typedef struct character {
 } character;
 
 // Structure pour représenter le labyrinthe
-typedef struct Maze {
-    Graph graph;              // Graphe représentant le labyrinthe
-    int numEnemies;           // Nombre total d'ennemis dans le labyrinthe
+typedef struct {
+    Graph graph;
+    int width;
+    int height;
+    bool walls[MAX_NODES][MAX_NODES];
 } Maze;
 
 
@@ -101,7 +105,7 @@ typedef struct Maze {
 // Fonctions pour gérer le graphe
 void InitializeGraph(Graph *graph);
 void AddNode(Graph *graph, int x, int y);
-void AddEdge(Graph *graph, int start, int end, int weight);
+void AddEdge(Graph *graph, int start, int end, EnemyType enemyType, int number_enemy);
 
 
 
@@ -111,10 +115,9 @@ bool MovePlayer(Player *player, Maze *maze,int nextNode);
 //bool CheckCollisionPlayerEnemy(Rectangle player, Enemy enemy);
 
 // Fonctions pour gérer le labyrinthe
-void InitializeMaze(Maze *maze); // void InitializeMaze(Maze *maze);
-void InitializeMazeLevel1(Maze *maze);
-void RenderMaze(Maze *maze);
-void GenerateMaze(Maze *maze, int complexity);
+void InitializeMaze(Maze *maze, int width, int height); // void InitializeMaze(Maze *maze);
+void GenerateMaze(Maze *maze);
+void RenderMaze(Maze *maze, int rectX, int rectY, int rectWidth, int rectHeight);
 void PrintPath(int *predecessors, int startNode, int goalNode);
 void FreeMaze(Maze *maze); // Ajout de cette déclaration
 
