@@ -19,6 +19,7 @@ typedef enum {
     L,
     T,
     G, 
+    M,
 } EnemyType;
 
 typedef struct {
@@ -48,7 +49,7 @@ typedef struct {
 } Maze;
 
 // Tableau de lettres associées aux types d'ennemis
-const char *enemyLetters[] = { "L", "T", "G" };
+const char *enemyLetters[] = { "L", "T", "G", "M" };
 
 // Function prototypes
 void InitializeGraph(Graph *graph);
@@ -61,6 +62,7 @@ void GenerateMaze(Maze *maze);
 void RenderMaze(Maze *maze, int screenWidth, int screenHeight, int cellSize);
 void DrawHealthBar(Player *player);
 void PrintPath(int *predecessors, int startNode, int goalNode);
+bool IsEnemyTypeValid(Maze *maze, int nodeIndex, EnemyType proposedType) ;
 
 void InitializeGraph(Graph *graph) {
     graph->numNodes = 0;
@@ -122,6 +124,17 @@ void InitializeMaze(Maze *maze, int width, int height) {
     printf("Maze initialized with width %d and height %d.\n", width, height);
 }
 
+bool IsEnemyTypeValid(Maze *maze, int nodeIndex, EnemyType proposedType) {
+    for (int i = 0; i < maze->graph.numEdges; i++) {
+        Edge edge = maze->graph.edges[i];
+        if ((edge.start == nodeIndex || edge.end == nodeIndex) && edge.enemy_type == proposedType) {
+            return false;
+        }
+    }
+    return true;
+}
+
+
 void GenerateMaze(Maze *maze) {
     int width = maze->width;
     int height = maze->height;
@@ -147,8 +160,8 @@ void GenerateMaze(Maze *maze) {
     int startY = 0;
 
     // Ajouter les arêtes adjacentes du premier nœud
-    if (startX < width - 1) candidateEdges[numCandidates++] = (Edge){startX * width + startY, (startX + 1) * width + startY, rand() % 10 + 1, rand() % 3};
-    if (startY < height - 1) candidateEdges[numCandidates++] = (Edge){startX * width + startY, startX * width + (startY + 1), rand() % 10 + 1, rand() % 3};
+    if (startX < width - 1) candidateEdges[numCandidates++] = (Edge){startX * width + startY, (startX + 1) * width + startY, rand() % 10 + 1, rand() % 4};
+    if (startY < height - 1) candidateEdges[numCandidates++] = (Edge){startX * width + startY, startX * width + (startY + 1), rand() % 10 + 1, rand() % 4};
 
     while (numCandidates > 0) {
         // Choisir une arête aléatoire
@@ -166,14 +179,20 @@ void GenerateMaze(Maze *maze) {
             // Marquer le nœud comme visité
             maze->walls[endY][endX] = false;
 
-            // Ajouter l'arête au graphe du labyrinthe
-            AddEdge(&maze->graph, edge.start, edge.end, edge.enemy_type, edge.number_enemy);
+            // Choisir un type d'ennemi valide pour l'arête
+            EnemyType enemyType;
+            do {
+                enemyType = rand() % 4; // Suppose 3 types d'ennemis (L, T, G)
+            } while (!IsEnemyTypeValid(maze, edge.start, enemyType) || !IsEnemyTypeValid(maze, edge.end, enemyType));
+
+            // Ajouter l'arête au graphe du labyrinthe avec le type d'ennemi valide
+            AddEdge(&maze->graph, edge.start, edge.end, enemyType, edge.number_enemy);
 
             // Ajouter les nouvelles arêtes candidates
-            if (endX > 0 && maze->walls[endY][endX - 1]) candidateEdges[numCandidates++] = (Edge){endY * width + endX, endY * width + (endX - 1), rand() % 10 + 1, rand() % 3};
-            if (endX < width - 1 && maze->walls[endY][endX + 1]) candidateEdges[numCandidates++] = (Edge){endY * width + endX, endY * width + (endX + 1), rand() % 10 + 1, rand() % 3};
-            if (endY > 0 && maze->walls[endY - 1][endX]) candidateEdges[numCandidates++] = (Edge){endY * width + endX, (endY - 1) * width + endX, rand() % 10 + 1, rand() % 3};
-            if (endY < height - 1 && maze->walls[endY + 1][endX]) candidateEdges[numCandidates++] = (Edge){endY * width + endX, (endY + 1) * width + endX, rand() % 10 + 1, rand() % 3};
+            if (endX > 0 && maze->walls[endY][endX - 1]) candidateEdges[numCandidates++] = (Edge){endY * width + endX, endY * width + (endX - 1), rand() % 10 + 1, enemyType};
+            if (endX < width - 1 && maze->walls[endY][endX + 1]) candidateEdges[numCandidates++] = (Edge){endY * width + endX, endY * width + (endX + 1), rand() % 10 + 1, enemyType};
+            if (endY > 0 && maze->walls[endY - 1][endX]) candidateEdges[numCandidates++] = (Edge){endY * width + endX, (endY - 1) * width + endX, rand() % 10 + 1, enemyType};
+            if (endY < height - 1 && maze->walls[endY + 1][endX]) candidateEdges[numCandidates++] = (Edge){endY * width + endX, (endY + 1) * width + endX, rand() % 10 + 1, enemyType};
         }
 
         // Retirer l'arête traitée de la liste des candidats
@@ -182,6 +201,7 @@ void GenerateMaze(Maze *maze) {
 
     printf("Maze generated.\n");
 }
+
 
 void RenderMaze(Maze *maze, int screenWidth, int screenHeight, int cellSize) {
     int halfCell = cellSize / 2;
