@@ -8,6 +8,7 @@
 #include <raylib.h>
 #include <time.h>
 #include <limits.h>
+#include <math.h>
 
 #define MAX_NODES 100
 #define MAX_EDGES 200
@@ -77,5 +78,9 @@ void DrawHealthBar(Player *player);
 void PrintPath(int *predecessors, int startNode, int goalNode);
 bool IsEnemyTypeValid(Maze *maze, int nodeIndex, EnemyType proposedType);
 void BellmanFord(Graph *graph, int startNode, int *distances, int *predecessors);
+void Dijkstra(Graph *graph, int startNode, int *distances, int *predecessors);
+void AStar(Graph *graph, int startNode, int goalNode, int *distances, int *predecessors);
+int Heuristic(Node a, Node b) ;
+int FindLowestFScore(bool *openSet, int *fScore, int V);
 
 #endif // __GRAPH__H__

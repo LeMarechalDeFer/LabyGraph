@@ -1,9 +1,137 @@
-
 #include "../include/graph.h"
 
 
 // Définition et initialisation du tableau de lettres associées aux types d'ennemis
 const char *enemyLetters[] = { "L", "T", "G", "M" };
+
+
+// Fonction heuristique (distance de Manhattan)
+int Heuristic(Node a, Node b) {
+    return abs(a.x - b.x) + abs(a.y - b.y);
+}
+
+// Fonction pour trouver le noeud avec le score le plus bas dans l'ensemble ouvert
+int FindLowestFScore(bool *openSet, int *fScore, int V) {
+    int lowest = INT_MAX;
+    int lowestNode = -1;
+    for (int i = 0; i < V; i++) {
+        if (openSet[i] && fScore[i] < lowest) {
+            lowest = fScore[i];
+            lowestNode = i;
+        }
+    }
+    return lowestNode;
+}
+
+void AStar(Graph *graph, int startNode, int goalNode, int *distances, int *predecessors) {
+    int V = graph->numNodes;
+    bool openSet[MAX_NODES] = {false};
+    bool closedSet[MAX_NODES] = {false};
+    int gScore[MAX_NODES];
+    int fScore[MAX_NODES];
+
+    for (int i = 0; i < V; i++) {
+        gScore[i] = INT_MAX;
+        fScore[i] = INT_MAX;
+        predecessors[i] = -1;
+    }
+
+    gScore[startNode] = 0;
+    fScore[startNode] = Heuristic(graph->nodes[startNode], graph->nodes[goalNode]);
+    openSet[startNode] = true;
+
+    while (true) {
+        int current = FindLowestFScore(openSet, fScore, V);
+        if (current == -1) {
+            printf("A* failed to find a path.\n");
+            return;
+        }
+
+        if (current == goalNode) {
+            for (int i = 0; i < V; i++) {
+                distances[i] = gScore[i];
+            }
+            printf("A* found a path.\n");
+            return;
+        }
+
+        openSet[current] = false;
+        closedSet[current] = true;
+
+        for (int i = 0; i < graph->numEdges; i++) {
+            Edge edge = graph->edges[i];
+            int neighbor = -1;
+            if (edge.start == current) {
+                neighbor = edge.end;
+            } else if (edge.end == current) {
+                neighbor = edge.start;
+            }
+
+            if (neighbor == -1 || closedSet[neighbor]) {
+                continue;
+            }
+
+            int tentative_gScore = gScore[current] + edge.number_enemy;
+
+            if (!openSet[neighbor]) {
+                openSet[neighbor] = true;
+            } else if (tentative_gScore >= gScore[neighbor]) {
+                continue;
+            }
+
+            predecessors[neighbor] = current;
+            gScore[neighbor] = tentative_gScore;
+            fScore[neighbor] = gScore[neighbor] + Heuristic(graph->nodes[neighbor], graph->nodes[goalNode]);
+        }
+    }
+}
+
+
+void Dijkstra(Graph *graph, int startNode, int *distances, int *predecessors) {
+    int V = graph->numNodes;
+    bool visited[V];
+    
+    // Initialize distances and visited arrays
+    for (int i = 0; i < V; i++) {
+        distances[i] = INT_MAX;
+        predecessors[i] = -1;
+        visited[i] = false;
+    }
+    distances[startNode] = 0;
+    
+    for (int i = 0; i < V - 1; i++) {
+        // Find the vertex with the minimum distance from the set of vertices not yet processed
+        int minDistance = INT_MAX;
+        int minIndex = -1;
+        for (int v = 0; v < V; v++) {
+            if (!visited[v] && distances[v] <= minDistance) {
+                minDistance = distances[v];
+                minIndex = v;
+            }
+        }
+        
+        int u = minIndex;
+        visited[u] = true;
+        
+        // Update distance value of the adjacent vertices of the picked vertex
+        for (int j = 0; j < graph->numEdges; j++) {
+            int v;
+            if (graph->edges[j].start == u) {
+                v = graph->edges[j].end;
+            } else if (graph->edges[j].end == u) {
+                v = graph->edges[j].start;
+            } else {
+                continue;
+            }
+            
+            int weight = graph->edges[j].number_enemy;
+            if (!visited[v] && distances[u] != INT_MAX && distances[u] + weight < distances[v]) {
+                distances[v] = distances[u] + weight;
+                predecessors[v] = u;
+            }
+        }
+    }
+}
 
 
 void InitializeGraph(Graph *graph) {

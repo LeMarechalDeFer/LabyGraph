@@ -115,6 +115,19 @@ int main() {
     // Afficher le chemin optimal
     PrintPath(predecessors, 0, mazeWidth * mazeHeight - 1);
 
+    // Exécuter Dijkstra pour trouver le chemin optimal
+    Dijkstra(&maze.graph, 0, distances, predecessors);
+
+    // Afficher le chemin optimal trouvé par Dijkstra
+    PrintPath(predecessors, 0, mazeWidth * mazeHeight - 1);
+
+     // Exécuter A* pour trouver le chemin optimal
+    AStar(&maze.graph, 0, mazeWidth * mazeHeight - 1, distances, predecessors);
+
+    // Afficher le chemin optimal trouvé par A*
+    PrintPath(predecessors, 0, mazeWidth * mazeHeight - 1);
+
+
     GameScreen currentScreen = TITLE;
     double lastKeyPressTime = 0;  // Temps de la dernière pression de touche
 
