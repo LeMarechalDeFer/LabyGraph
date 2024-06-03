@@ -82,5 +82,6 @@ void Dijkstra(Graph *graph, int startNode, int *distances, int *predecessors);
 void AStar(Graph *graph, int startNode, int goalNode, int *distances, int *predecessors);
 int Heuristic(Node a, Node b) ;
 int FindLowestFScore(bool *openSet, int *fScore, int V);
+void ResetGame(Maze *maze, Player *player, int screenWidth, int screenHeight);
 
 #endif // __GRAPH__H__

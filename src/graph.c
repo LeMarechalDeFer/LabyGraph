@@ -4,6 +4,29 @@
 // Définition et initialisation du tableau de lettres associées aux types d'ennemis
 const char *enemyLetters[] = { "L", "T", "G", "M" };
 
+void ResetGame(Maze *maze, Player *player, int screenWidth, int screenHeight) {
+    // Régénérer le labyrinthe
+    InitializeMaze(maze, maze->width, maze->height);
+    GenerateMaze(maze);
+
+    // Réinitialiser la position du joueur au premier nœud
+    InitializePlayer(player, 0);
+
+    // Calculer dynamiquement la taille des cellules en fonction des dimensions de la fenêtre
+    int cellSize = (screenWidth < screenHeight ? screenWidth : screenHeight) / (maze->width > maze->height ? maze->width : maze->height);
+
+    // Exécuter les algorithmes pour trouver les chemins optimaux
+    int distances[MAX_NODES];
+    int predecessors[MAX_NODES];
+    BellmanFord(&maze->graph, 0, distances, predecessors);
+    PrintPath(predecessors, 0, maze->width * maze->height - 1);
+    Dijkstra(&maze->graph, 0, distances, predecessors);
+    PrintPath(predecessors, 0, maze->width * maze->height - 1);
+    AStar(&maze->graph, 0, maze->width * maze->height - 1, distances, predecessors);
+    PrintPath(predecessors, 0, maze->width * maze->height - 1);
+}
+
+
 
 // Fonction heuristique (distance de Manhattan)
 int Heuristic(Node a, Node b) {
