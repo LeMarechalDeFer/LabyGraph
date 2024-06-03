@@ -3,11 +3,11 @@
 int main() {
     // Initialisation de Raylib
 
-    //Dimensions de la fenêtre
+    // Dimensions de la fenêtre
     int screenWidth = 1920;
     int screenHeight = 1080;
 
-    //Initialisation de la fenêtre Raylib
+    // Initialisation de la fenêtre Raylib
     InitWindow(screenWidth, screenHeight, "Menu du jeu éducatif");
     SetTraceLogLevel(LOG_ALL); // Activer les logs détaillés
     SetTargetFPS(60); // Définir le FPS pour une animation fluide
@@ -15,8 +15,9 @@ int main() {
     int LVL = 0;
     int LVL_actuelle = 0;
     int counthelper = 1;
+    int level = 1;  // Niveau actuel
 
-    // Charger les images 
+    // Charger les images
     Image player_Helper = LoadImage("src/player.png");
     Image ESIEA_logo = LoadImage("src/ESIEA-logo.png");
     Image dialogue_box = LoadImage("src/dialogue_box.png");
@@ -71,9 +72,9 @@ int main() {
         "Parfait !! Dans ce cas, bienvenue au premier étage.\nDans chaque étage, tu auras des défis à réaliser\n afin de pouvoir continuer ton ascension. ",
     };
     char *consignes[] = {
-        "Vous devez trouver le moyen d'affronter le moins\n d'énenmies possible en suivant\n l'algo de Bellman.",
-        "Vous devez trouver le moyen d'affronter le plus\n d'énenmies possible en suivant\n l'algo de Bellman.",
-        "la suite des consigne...",
+        "Vous devez trouver le moyen d'affronter le moins\n d'ennemis possible en suivant\n l'algo de Bellman.",
+        "Vous devez trouver le moyen d'affronter le plus\n d'ennemis possible en suivant\n l'algo de Bellman.",
+        
     };
 
     int maxLines = sizeof(monologue) / sizeof(monologue[0]);
@@ -100,22 +101,21 @@ int main() {
     // Exécuter Bellman-Ford pour trouver le chemin optimal
     int distances[MAX_NODES];
     int predecessors[MAX_NODES];
-    BellmanFord(&maze.graph, 0, distances, predecessors);
+    int operations;
 
-    // Afficher le chemin optimal
+    operations = BellmanFord(&maze.graph, 0, distances, predecessors);
     PrintPath(predecessors, 0, mazeWidth * mazeHeight - 1);
+    printf("Bellman-Ford: %d opérations\n", operations);
 
     // Exécuter Dijkstra pour trouver le chemin optimal
-    Dijkstra(&maze.graph, 0, distances, predecessors);
-
-    // Afficher le chemin optimal trouvé par Dijkstra
+    operations = Dijkstra(&maze.graph, 0, distances, predecessors);
     PrintPath(predecessors, 0, mazeWidth * mazeHeight - 1);
+    printf("Dijkstra: %d opérations\n", operations);
 
-     // Exécuter A* pour trouver le chemin optimal
-    AStar(&maze.graph, 0, mazeWidth * mazeHeight - 1, distances, predecessors);
-
-    // Afficher le chemin optimal trouvé par A*
+    // Exécuter A* pour trouver le chemin optimal
+    operations = AStar(&maze.graph, 0, mazeWidth * mazeHeight - 1, distances, predecessors);
     PrintPath(predecessors, 0, mazeWidth * mazeHeight - 1);
+    printf("A*: %d opérations\n", operations);
 
     GameScreen currentScreen = TITLE;
     double lastKeyPressTime = 0;  // Temps de la dernière pression de touche
@@ -144,6 +144,11 @@ int main() {
             lastKeyPressTime = currentTime;
 
             if (IsKeyPressed(KEY_ENTER)) {
+                if (level < 3) {
+                    level++;
+                } else {
+                    level = 1; // Revenir au niveau 1 après le niveau 3
+                }
                 // Réinitialiser le jeu
                 ResetGame(&maze, &player, screenWidth, screenHeight);
                 currentScreen = GAMEPLAY;
@@ -182,7 +187,7 @@ int main() {
                 if (IsKeyPressed(KEY_K)) {
                     UnloadSound(son_start);
                 }
-                DrawText("Niveau 1 ~ BELLMAN", 300, 0, 60, LIGHTGRAY);
+                DrawText(TextFormat("Niveau %d", level), 300, 0, 60, LIGHTGRAY);
                 Rectangle rec_graph = { 0, 0, 1080, 1080 };
                 DrawRectangle(rec_graph.x, rec_graph.y, rec_graph.width, rec_graph.height, LIGHTGRAY);
                 int bordergraph = 5;
@@ -336,3 +341,4 @@ int main() {
 
     return 0;
 }
+

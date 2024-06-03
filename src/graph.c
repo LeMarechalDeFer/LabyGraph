@@ -45,18 +45,19 @@ int FindLowestFScore(bool *openSet, int *fScore, int V) {
     }
     return lowestNode;
 }
-
-void AStar(Graph *graph, int startNode, int goalNode, int *distances, int *predecessors) {
+int AStar(Graph *graph, int startNode, int goalNode, int *distances, int *predecessors) {
     int V = graph->numNodes;
     bool openSet[MAX_NODES] = {false};
     bool closedSet[MAX_NODES] = {false};
     int gScore[MAX_NODES];
     int fScore[MAX_NODES];
+    int operations = 0; // Compteur d'opérations
 
     for (int i = 0; i < V; i++) {
         gScore[i] = INT_MAX;
         fScore[i] = INT_MAX;
         predecessors[i] = -1;
+        operations++; // Compteur pour initialisation
     }
 
     gScore[startNode] = 0;
@@ -67,7 +68,7 @@ void AStar(Graph *graph, int startNode, int goalNode, int *distances, int *prede
         int current = FindLowestFScore(openSet, fScore, V);
         if (current == -1) {
             printf("A* failed to find a path.\n");
-            return;
+            return operations;
         }
 
         if (current == goalNode) {
@@ -75,7 +76,7 @@ void AStar(Graph *graph, int startNode, int goalNode, int *distances, int *prede
                 distances[i] = gScore[i];
             }
             printf("A* found a path.\n");
-            return;
+            return operations;
         }
 
         openSet[current] = false;
@@ -95,6 +96,7 @@ void AStar(Graph *graph, int startNode, int goalNode, int *distances, int *prede
             }
 
             int tentative_gScore = gScore[current] + edge.number_enemy;
+            operations++; // Compteur pour chaque relaxation
 
             if (!openSet[neighbor]) {
                 openSet[neighbor] = true;
@@ -110,15 +112,17 @@ void AStar(Graph *graph, int startNode, int goalNode, int *distances, int *prede
 }
 
 
-void Dijkstra(Graph *graph, int startNode, int *distances, int *predecessors) {
+int Dijkstra(Graph *graph, int startNode, int *distances, int *predecessors) {
     int V = graph->numNodes;
     bool visited[V];
+    int operations = 0; // Compteur d'opérations
     
     // Initialize distances and visited arrays
     for (int i = 0; i < V; i++) {
         distances[i] = INT_MAX;
         predecessors[i] = -1;
         visited[i] = false;
+        operations++; // Compteur pour initialisation
     }
     distances[startNode] = 0;
     
@@ -130,6 +134,7 @@ void Dijkstra(Graph *graph, int startNode, int *distances, int *predecessors) {
             if (!visited[v] && distances[v] <= minDistance) {
                 minDistance = distances[v];
                 minIndex = v;
+                operations++; // Compteur pour chaque vérification de distance minimale
             }
         }
         
@@ -148,14 +153,16 @@ void Dijkstra(Graph *graph, int startNode, int *distances, int *predecessors) {
             }
             
             int weight = graph->edges[j].number_enemy;
+            operations++; // Compteur pour chaque relaxation
             if (!visited[v] && distances[u] != INT_MAX && distances[u] + weight < distances[v]) {
                 distances[v] = distances[u] + weight;
                 predecessors[v] = u;
             }
         }
     }
-}
 
+    return operations;
+}
 
 void InitializeGraph(Graph *graph) {
     graph->numNodes = 0;
@@ -294,31 +301,40 @@ void GenerateMaze(Maze *maze) {
     printf("Maze generated.\n");
 }
 
-void BellmanFord(Graph *graph, int startNode, int *distances, int *predecessors) {
+int BellmanFord(Graph *graph, int startNode, int *distances, int *predecessors) {
     int V = graph->numNodes;
     int E = graph->numEdges;
+    int operations = 0; // Compteur d'opérations
 
     // Initialisation
     for (int i = 0; i < V; i++) {
         distances[i] = INT_MAX;
         predecessors[i] = -1;
+        operations++; // Compteur pour initialisation
     }
     distances[startNode] = 0;
 
     // Relaxation des arêtes
     for (int i = 1; i <= V - 1; i++) {
+        bool updated = false; // Flag pour vérifier les mises à jour
         for (int j = 0; j < E; j++) {
             int u = graph->edges[j].start;
             int v = graph->edges[j].end;
             int weight = graph->edges[j].number_enemy;
+            operations++; // Compteur pour chaque relaxation
             if (distances[u] != INT_MAX && distances[u] + weight < distances[v]) {
                 distances[v] = distances[u] + weight;
                 predecessors[v] = u;
+                updated = true;
             }
             if (distances[v] != INT_MAX && distances[v] + weight < distances[u]) {
                 distances[u] = distances[v] + weight;
                 predecessors[u] = v;
+                updated = true;
             }
+        }
+        if (!updated) {
+            break; // Arrêter si aucune mise à jour n'est effectuée
         }
     }
 
@@ -327,12 +343,17 @@ void BellmanFord(Graph *graph, int startNode, int *distances, int *predecessors)
         int u = graph->edges[i].start;
         int v = graph->edges[i].end;
         int weight = graph->edges[i].number_enemy;
+        operations++; // Compteur pour chaque vérification de cycle
         if (distances[u] != INT_MAX && distances[u] + weight < distances[v]) {
             printf("Graph contains negative weight cycle\n");
-            return;
+            return operations;
         }
     }
+
+    return operations;
 }
+
+
 
 void RenderMaze(Maze *maze, int cellSize) { //void RenderMaze(Maze *maze, int screenWidth, int screenHeight, int cellSize)
     int halfCell = cellSize / 2;
